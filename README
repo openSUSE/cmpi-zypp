@@ -1,2 +1,25 @@
-Install test enviroment
+Install test enviroment (SLES11)
+
+#> zypper in sblim-sfcb
+#> rcsfcb start
+#> zypper in sblim-cmpi-base
+
+#>  zypper ar http://download.opensuse.org/repositories/systemsmanagement:/wbem/openSUSE_Factory/ wbem
+#> zypper mr -p 200 wbem
+#> zypper mr -r wbem
+
+#> zypper in yawn
+
+#> rcapache2 start
+
+# go with a webbrowser to: http://localhost/yawn/
+
+# contact the wbem deamon with the following values:
+
+# URI Scheme: https
+# Host: localhost
+# Port: 5989
+# Namespace: root/cimv2
+
+# authenticate with root <rootpw>
 
