@@ -1,5 +1,5 @@
 [SUSE_SoftwareIdentity]
-  provider: SUSE_SoftwareIdentityProvider
+  provider: SUSE_SoftwareIdentity
   location: cmpizypp
-  type: instance 
+  type: instance
   namespace: root/cimv2

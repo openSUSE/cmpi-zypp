@@ -5,10 +5,10 @@ namespace cmpizypp
 {
   /**
   */
-  class SUSESoftwareIdentity : public CmpiInstanceMI
+  class SUSE_SoftwareIdentityProvider : public CmpiInstanceMI
   {
     public:
-      SUSESoftwareIdentity( const CmpiBroker & mbp, const CmpiContext & ctx );
+      SUSE_SoftwareIdentityProvider( const CmpiBroker & mbp, const CmpiContext & ctx );
   };
 
 } // namespace cmpizypp
