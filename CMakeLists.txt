@@ -44,6 +44,7 @@ MACRO(ADD_TESTS)
 ENDMACRO(ADD_TESTS)
 
 ####################################################################
+
 FIND_PACKAGE( Zypp REQUIRED )
 IF( ZYPP_FOUND )
 INCLUDE_DIRECTORIES(${ZYPP_INCLUDE_DIR})
