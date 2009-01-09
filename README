@@ -30,6 +30,4 @@ Devel enviroment:
 #> zypper mr -p 200 -r homemc
 #> zypper in -r homemc sblim-cmpi-devel
 
-#> zypper in cmake libzypp-devel gcc-c++ gettext-devel doxygen 
-
-
+#> zypper in cmake libzypp-devel gcc-c++ gettext-devel doxygen cmpi-provider-register
