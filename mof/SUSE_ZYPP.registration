@@ -1,0 +1,3 @@
+# Classname Namespace ProviderName ProviderModule ProviderTypes ...
+SUSE_SoftwareIdentity root/cimv2 SUSE_SoftwareIdentityProvider cmpizypp instance
+
