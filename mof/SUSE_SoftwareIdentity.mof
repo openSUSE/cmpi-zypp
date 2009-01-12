@@ -13,7 +13,7 @@
 //      SUSE_SoftwareIdentity
 // ===================================================================
 
-[ Provider("cmpi:cmpizypp"),
+[ Provider("cmpi:cmpi-zypp"),
   Description ("A class derived from SoftwareIdentity"
   " to represent a resolvable software identity." )
 ]
