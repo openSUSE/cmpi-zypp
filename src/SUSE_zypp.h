@@ -24,6 +24,8 @@ namespace cmpizypp
       zypp::ResPoolProxy poolProxy() { return pool().proxy(); }
       zypp::sat::Pool    satpool()   { return zypp::sat::Pool::instance(); }
 
+      static std::string exceptionString( const zypp::Exception & err_r, const std::string & prefix = std::string() );
+
       /** SoftwareIdentity::InstanceId = SUSE:<name>-<version>-<release>.<arch>@<repoalias> */
       std::string SoftwareIdentityInstanceId( const zypp::sat::Solvable & slv ) const;
       std::string SoftwareIdentityInstanceId( const zypp::PoolItem & pi ) const

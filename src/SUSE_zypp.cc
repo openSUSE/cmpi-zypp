@@ -20,7 +20,7 @@ namespace cmpizypp
     int loginit = _loginit();
 
 
-    const Pathname sysRoot( "/" );
+    const Pathname sysRoot( "/Local/cimROOT" );
     bool zyppACInitialized = false;
 
     void zyppACInit()
@@ -28,14 +28,16 @@ namespace cmpizypp
       if ( zyppACInitialized )
         return;
 
+      KeyRing::setDefaultAccept( KeyRing::ACCEPT_UNKNOWNKEY|KeyRing::TRUST_KEY_TEMPORARILY );
+
       // Load Target
       getZYpp()->initializeTarget( sysRoot );
-      getZYpp()->target()->load();
+      //getZYpp()->target()->load();
 
       // check services ?
       if ( 0 )
       {
-        RepoManager repoManager;
+        RepoManager repoManager( sysRoot );
         ServiceInfoList services = repoManager.knownServices();
 
         for ( ServiceInfoList::iterator it = services.begin(); it != services.end(); ++it )
@@ -51,7 +53,7 @@ namespace cmpizypp
       }
 
       // Load all enabled repos in repos.d to pool.
-      RepoManager repoManager;
+      RepoManager repoManager( sysRoot );
       RepoInfoList repos = repoManager.knownRepositories();
       for ( RepoInfoList::iterator it = repos.begin(); it != repos.end(); ++it )
       {
@@ -90,6 +92,20 @@ namespace cmpizypp
 
   ZyppAC::~ZyppAC()
   {
+  }
+
+  std::string ZyppAC::exceptionString( const Exception & err_r, const std::string & prefix_r )
+  {
+    if ( err_r.historyEmpty() )
+      return prefix_r+err_r.asUserString();
+
+    std::string ret( err_r.asUserString() );
+    if ( ret.empty() )
+      return prefix_r+err_r.historyAsString();
+
+    ret += '\n';
+    ret += err_r.historyAsString();
+    return prefix_r+ret;
   }
 
   std::string ZyppAC::SoftwareIdentityInstanceId( const zypp::sat::Solvable & slv ) const
