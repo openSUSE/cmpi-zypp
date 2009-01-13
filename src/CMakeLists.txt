@@ -7,9 +7,11 @@ INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
 ADD_DEFINITIONS(-DLOCALEDIR="${CMAKE_INSTALL_PREFIX}/share/locale" -DTEXTDOMAIN="cmpi-zypp" )
 
 SET( CMPIZYPP_SRCS
+  SUSE_zypp.cc
   SUSE_SoftwareIdentityProvider.cc
 )
 SET( CMPIZYPP_HEADERS
+  SUSE_zypp.h
   SUSE_SoftwareIdentityProvider.h
 )
 
