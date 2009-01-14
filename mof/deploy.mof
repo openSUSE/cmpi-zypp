@@ -1,3 +1,4 @@
 #pragma namespace ("root/cimv2")
 #pragma include ("SUSE_SoftwareIdentity.mof")
+#pragma include ("SUSE_InstalledSoftwareIdentity.mof")
 

@@ -17,12 +17,6 @@
 using namespace zypp;
 using std::endl;
 
-#define _CMPIZYPP_TRACE2( LV, FORMAT ) CMTraceMessage( broker->getEnc(), LV, "SUSE_SoftwareIdentityProvider", str::form FORMAT .c_str(), 0 );
-#define _CMPIZYPP_LOG( LV, FORMAT ) CMLogMessage( broker->getEnc(), LV, "SUSE_SoftwareIdentityProvider", str::form FORMAT .c_str(), 0 );
-
-#define _CMPIZYPP_TRACE( LV, FORMAT ) USR << "[" << LV << "] " << str::form FORMAT << endl;
-
-
 namespace cmpizypp
 {
   namespace

@@ -9,10 +9,12 @@ ADD_DEFINITIONS(-DLOCALEDIR="${CMAKE_INSTALL_PREFIX}/share/locale" -DTEXTDOMAIN=
 SET( CMPIZYPP_SRCS
   SUSE_zypp.cc
   SUSE_SoftwareIdentityProvider.cc
+  SUSE_InstalledSoftwareIdentityProvider.cc
 )
 SET( CMPIZYPP_HEADERS
   SUSE_zypp.h
   SUSE_SoftwareIdentityProvider.h
+  SUSE_InstalledSoftwareIdentityProvider.h
 )
 
 ADD_LIBRARY(cmpi-zypp SHARED ${CMPIZYPP_SRCS})
