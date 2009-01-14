@@ -13,15 +13,17 @@ namespace cmpizypp
 {
   namespace
   {
-    int _loginit()
+
+    int _initonce()
     {
-		zypp::base::LogControl::instance().logToStdErr();
-		return 1;
+      // use `export ZYPP_LOGFILE=/tmp/CMPIZYPP.log` to redirect the zypp log.
+      // zypp::base::LogControl::instance().logToStdErr();
+      return 0;
     }
-    int loginit = _loginit();
+    int initonce = _initonce();
 
 
-    const Pathname sysRoot( "/Local/cimROOT" );
+    const Pathname sysRoot( getenv("CMPIZYPP_ROOT") ? getenv("CMPIZYPP_ROOT") : "/" );
     bool zyppACInitialized = false;
 
     void zyppACInit()
@@ -33,12 +35,14 @@ namespace cmpizypp
 
       // Load Target
       getZYpp()->initializeTarget( sysRoot );
-      //getZYpp()->target()->load();
+      getZYpp()->target()->load();
+
+      // Load repos
+      RepoManager repoManager( sysRoot );
 
       // check services ?
       if ( 0 )
       {
-        RepoManager repoManager( sysRoot );
         ServiceInfoList services = repoManager.knownServices();
 
         for ( ServiceInfoList::iterator it = services.begin(); it != services.end(); ++it )
@@ -54,7 +58,6 @@ namespace cmpizypp
       }
 
       // Load all enabled repos in repos.d to pool.
-      RepoManager repoManager( sysRoot );
       RepoInfoList repos = repoManager.knownRepositories();
       for ( RepoInfoList::iterator it = repos.begin(); it != repos.end(); ++it )
       {
@@ -79,6 +82,11 @@ namespace cmpizypp
         USR << "Create from cache" << endl;
         repoManager.loadFromCache( nrepo );
       }
+
+      ResPool   pool( ResPool::instance() );
+      sat::Pool satpool( sat::Pool::instance() );
+      dumpRange( USR, satpool.reposBegin(), satpool.reposEnd() );
+      USR << "pool: " << pool << endl;
 
       zyppACInitialized = true;
     }
@@ -109,14 +117,72 @@ namespace cmpizypp
     return prefix_r+ret;
   }
 
+
   std::string ZyppAC::SoftwareIdentityInstanceId( const zypp::sat::Solvable & slv ) const
   {
     return( str::form( "SUSE:%s%s-%s.%s@%s",
-                        slv.isKind<SrcPackage>() ? "srcpackage:" : "",
+                        slv.isKind<SrcPackage>() ? ResKind::srcpackage.c_str() : "",
                         slv.ident().c_str(),
                         slv.edition().c_str(),
                         slv.arch().c_str(),
                         slv.repository().alias().c_str() ) );
+  }
+
+  PoolItem ZyppAC::findSoftwareIdentityInstanceId( const std::string & id_r ) const
+  {
+    // SoftwareIdentity::InstanceId = SUSE:<name>-<version>-<release>.<arch>@<repoalias>
+
+    if ( ! str::hasPrefix( id_r, "SUSE:" ) )
+      return PoolItem();
+
+    // check repo
+    std::string::size_type rdelim( id_r.find( "@" ) );
+    if ( rdelim == std::string::npos )
+      return PoolItem();
+
+    Repository repo( sat::Pool::instance().reposFind( id_r.substr( rdelim+1) ) );
+    if ( ! repo )
+      return PoolItem();
+
+    // check n-v-r.a from behind
+    std::string::size_type delim = id_r.rfind( ".", rdelim );
+    if ( delim == std::string::npos )
+      return PoolItem();
+
+    Arch arch( id_r.substr( delim+1, rdelim-delim-1 ) );
+
+    // v-r starts at one but last '-'
+    rdelim = delim;
+    delim = id_r.rfind( "-", rdelim );
+    if ( delim == std::string::npos )
+      return PoolItem();
+    delim = id_r.rfind( "-", delim-1 );
+    if ( delim == std::string::npos )
+      return PoolItem();
+
+    Edition ed( id_r.substr( delim+1, rdelim-delim-1 ) );
+
+    // eveythig before is name (except the leading "SUSE:")
+    std::string identstring( id_r.substr( 5, delim-5 ) );
+
+    DBG << "Lookup:" << endl;
+    DBG << identstring << endl;
+    DBG << ed << endl;
+    DBG << arch << endl;
+    DBG << repo << endl;
+
+    // now lookup in pool..
+    sat::Solvable::SplitIdent ident( (IdString(identstring)) );
+    for_( it, pool().byIdentBegin( ident.kind(), ident.name() ), pool().byIdentEnd( ident.kind(), ident.name() ) )
+    {
+      sat::Solvable solv( (*it).satSolvable() );
+      if ( solv.repository() == repo && solv.arch() == arch && solv.edition() == ed )
+      {
+        return *it;
+      }
+    }
+
+    return PoolItem();
   }
 
 }
