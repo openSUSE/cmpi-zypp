@@ -15,7 +15,8 @@ namespace cmpizypp
   {
     int _loginit()
     {
-      zypp::base::LogControl::instance().logToStdErr();
+		zypp::base::LogControl::instance().logToStdErr();
+		return 1;
     }
     int loginit = _loginit();
 
