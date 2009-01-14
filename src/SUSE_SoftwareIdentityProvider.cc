@@ -17,10 +17,10 @@
 using namespace zypp;
 using std::endl;
 
-#define _CMPIZYPP_TRACE2( LV, FORMAT ) CMTraceMessage( broker->getEnc(), LV, "SUSE_SoftwareIdentityProvider", str::form( FORMAT ).c_str(), 0 );
-#define _CMPIZYPP_LOG( LV, FORMAT ) CMLogMessage( broker->getEnc(), LV, "SUSE_SoftwareIdentityProvider", str::form( FORMAT ).c_str(), 0 );
+#define _CMPIZYPP_TRACE2( LV, FORMAT ) CMTraceMessage( broker->getEnc(), LV, "SUSE_SoftwareIdentityProvider", str::form FORMAT .c_str(), 0 );
+#define _CMPIZYPP_LOG( LV, FORMAT ) CMLogMessage( broker->getEnc(), LV, "SUSE_SoftwareIdentityProvider", str::form FORMAT .c_str(), 0 );
 
-#define _CMPIZYPP_TRACE( LV, FORMAT ) USR << "[" << LV << "] " << str::form( FORMAT ) << endl
+#define _CMPIZYPP_TRACE( LV, FORMAT ) USR << "[" << LV << "] " << str::form FORMAT << endl;
 
 
 namespace cmpizypp
@@ -98,23 +98,30 @@ namespace cmpizypp
       ci.setProperty( "IsEntity", CmpiTrue );
       ci.setProperty( "VersionString", solv.edition().c_str() );
 
+	  ci.setProperty( "Name", solv.ident().c_str() );
+	  ci.setProperty( "ElementName", solv.ident().c_str() );
+	  ci.setProperty( "Manufacturer", solv.vendor().c_str() ); 
+
+	  ci.setProperty( "Caption", solv.lookupStrAttribute(sat::SolvAttr::summary ).c_str());
+	  ci.setProperty( "Description", solv.lookupStrAttribute(sat::SolvAttr::description ).c_str() );
+
+	  
       CmpiArray targetOsTypes( 1, CMPI_uint16 );
       targetOsTypes[0] = CMPIUint16(36); // LINUX
       ci.setProperty( "TargetOSTypes", targetOsTypes );
 
-      if ( 0 )
-      {
       unsigned size = 1;
       CmpiArray types( size, CMPI_string );
       CmpiArray values( size, CMPI_string );
       std::string softwareFamily( "SUSE:1:36:" );
       softwareFamily += solv.arch().c_str();
-      types [0] = "CIM:SoftwareFamily";
-      values[0] = softwareFamily.c_str();
-      ci.setProperty( "IndenitifyingInfoTypes", types );
-      ci.setProperty( "IndenitifyingInfoValues", values );
-      }
 
+      types[0] = CmpiString("CIM:SoftwareFamily");
+      values[0] = CmpiString(softwareFamily.c_str());
+      ci.setProperty( "IdentityInfoType", types );
+      ci.setProperty( "IdentityInfoValue", values );
+      
+	  
       CmpiArray classifications( 1, CMPI_uint16 );
       classifications[0] = CMPIUint16(1); // other
       ci.setProperty( "Classifications", classifications );
@@ -124,6 +131,13 @@ namespace cmpizypp
       else
         ci.setProperty( "ExtendedResourceType", CMPIUint16(1) ); // other
 
+
+	  // TODO
+
+	  //ci.setProperty( "InstallDate", "NULL" );
+	  //ci.setProperty( "ReleaseDate", "NULL" );
+
+	  
 /*      types[0]  = "";
       values[0] = "";*/
 
