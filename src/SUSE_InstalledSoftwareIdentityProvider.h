@@ -19,7 +19,7 @@ namespace cmpizypp
 
       virtual CmpiStatus associators
           (const CmpiContext& ctx, CmpiResult& rslt,
-           const CmpiObjectPath& cop, const char* asscClass, const char* resultClass,
+           const CmpiObjectPath& cop, const char* assocClass, const char* resultClass,
            const char* role, const char* resultRole, const char** properties);
 
       virtual CmpiStatus associatorNames

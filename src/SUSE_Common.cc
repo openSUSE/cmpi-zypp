@@ -13,12 +13,15 @@ using namespace zypp;
 
 std::ostream & operator<<( std::ostream & str, const CmpiObjectPath & obj )
 {
-  str << obj.toString().charPtr() << " " << obj.getKeyCount() << " Keys";
+  CmpiObjectPath op( obj );
+  str << op.toString().charPtr() << " " << op.getKeyCount() << " Keys";
   return str;
 }
 
 namespace cmpizypp
 {
+
+
   /* ---------------------------------------------------------------------------*/
   /*                      _assoc_targetClass_Name()                             */
   /* ---------------------------------------------------------------------------*/
@@ -89,8 +92,130 @@ namespace cmpizypp
 
 
 
+
+  bool _assoc_create_refs_1toN_ST( CmpiBroker & broker,
+                                   const CmpiContext & ctx,
+                                   CmpiResult & rslt,
+                                   const CmpiObjectPath & cop,
+                                   const char * _ClassName,
+                                   const char * _RefSource,
+                                   const char * _RefTarget,
+                                   const char * _RefSourceClass,
+                                   const char * _RefTargetClass,
+                                   int inst,
+                                   int associators )
+  {
+    CmpiInstance cis( broker.getInstance( ctx, cop, NULL ) ); // source instance
+
+    if( !cis.instanceIsA(_RefSourceClass) )
+    {
+      return false;
+    }
+
+    CmpiObjectPath op("",""); // target op
+    try
+    {
+      op = _assoc_targetClass_OP( cop, _RefSourceClass, _RefTargetClass );
+    }
+    catch ( CmpiStatus & rc )
+    {
+      return true;
+    }
+
+    CmpiObjectPath rop( cop.getNameSpace(), _ClassName ); // associations op
+
+    if( (associators == 1) && (inst == 1) )
+    {
+            /* associators() */
+      CmpiEnumeration en(broker.enumInstances( ctx, op, NULL ) );
+      if( en.isNull() )
+      {
+        CmpiStatus st(CMPI_RC_ERR_FAILED, "EnumInstances failed.");
+        _CMPIZYPP_TRACE(1,("--- %s", st.msg()));
+        return false;
+      }
+      while (en.hasNext() )
+      {
+        CmpiInstance ci = en.getNext();
+        rslt.returnData( ci );
+      }
+    }
+    else
+    {
+      CmpiEnumeration en( broker.enumInstanceNames( ctx, op ) );
+      if( en.isNull() )
+      {
+        CmpiStatus st(CMPI_RC_ERR_FAILED, "EnumInstanceNames failed.");
+        _CMPIZYPP_TRACE(1,("--- %s", st.msg()));
+        return false;
+      }
+      while (en.hasNext() )
+      {
+        CmpiData data = en.getNext();
+        if( associators == 0 )
+        {
+                /* references() || referenceNames() */
+          CmpiInstance ci( rop );
+          if( ci.isNull() )
+          {
+            _CMPIZYPP_TRACE(1,("--- Create CmpiInstance failed."));
+            return false;
+          }
+          ci.setProperty( _RefSource, cop );
+          ci.setProperty( _RefTarget, data );
+
+          if( inst == 0 )
+          {
+                /* associators = 0 && inst = 0 */
+            CmpiObjectPath tmp = ci.getObjectPath();
+            tmp.setNameSpace(cop.getNameSpace());
+            rslt.returnData(tmp);
+          }
+          else
+          {
+                /* associators = 0 && inst = 1 */
+            rslt.returnData(ci);
+          }
+        }
+        else if(inst == 0)
+        {
+                /* associators = 1 && inst = 0 */
+          //rslt.returnData(data);
+          CmpiObjectPath tmp = (CmpiObjectPath)data;
+          tmp.setNameSpace(cop.getNameSpace());
+          rslt.returnData(tmp);
+        }
+      }
+    }
+    return true;
+  }
+
+  bool assoc_create_refs_1toN_ST( CmpiBroker & broker,
+                                  const CmpiContext & ctx,
+                                  CmpiResult & rslt,
+                                  const CmpiObjectPath & cop,
+                                  const char * _ClassName,
+                                  const char * _RefSource,
+                                  const char * _RefTarget,
+                                  const char * _RefSourceClass,
+                                  const char * _RefTargetClass,
+                                  int inst,
+                                  int associators )
+  {
+    _CMPIZYPP_TRACE(1,("--- assoc_create_refs_1toN_ST called"));
+    if ( _assoc_create_refs_1toN_ST( broker, ctx, rslt, cop,
+                                  _ClassName, _RefSource, _RefTarget, _RefSourceClass, _RefTargetClass,
+                                  inst, associators ) )
+    {
+      _CMPIZYPP_TRACE(1,("--- assoc_create_refs_1toN_ST exited"));
+      return true;
+    }
+    _CMPIZYPP_TRACE(1,("--- assoc_create_refs_1toN_ST failed"));
+    return false;
+  }
+
   /* ---------------------------------------------------------------------------*/
-  /*                      _assoc_create_refs_1toN()                             */
+  /*                      assoc_create_refs_1toN()                             */
   /* ---------------------------------------------------------------------------*/
   /* method to return CMPIInstance(s) / CMPIObjectPath(s) of related objects    */
   /* and the association itself                                                 */
@@ -105,62 +230,42 @@ namespace cmpizypp
   /* !!! this method returns each found CMPIInstance / CMPIObjectPath object to */
   /* the Object Manager (OM)                                                    */
   /* ---------------------------------------------------------------------------*/
-  bool _assoc_create_refs_1toN( CmpiBroker & broker,
-                                const CmpiContext & ctx,
-                                CmpiResult & rslt,
-                                const CmpiObjectPath & cop,
-                                const char * _ClassName,
-                                const char * _RefLeft,
-                                const char * _RefRight,
-                                const char * _RefLeftClass,
-                                const char * _RefRightClass,
-                                int inst,
-                                int associators )
-  {
-    CmpiInstance cis( broker.getInstance( ctx, cop, NULL ) ); // source instance
 
-    CmpiObjectPath op("",""); // target op
-    try
+    bool assoc_create_refs_1toN( CmpiBroker & broker,
+                                 const CmpiContext & ctx,
+                                 CmpiResult & rslt,
+                                 const CmpiObjectPath & cop,
+                                 const char * _ClassName,
+                                 const char * _RefLeft,
+                                 const char * _RefRight,
+                                 const char * _RefLeftClass,
+                                 const char * _RefRightClass,
+                                 int inst,
+                                 int associators )
     {
-      op = _assoc_targetClass_OP( cop, _RefLeftClass, _RefRightClass );
+      _CMPIZYPP_TRACE(1,("--- assoc_create_refs_1toN called"));
+      bool result = false;
+      if( cop.classPathIsA(_RefLeftClass) )
+      {
+        result = _assoc_create_refs_1toN_ST(broker, ctx, rslt, cop,
+                                            _ClassName, _RefLeft, _RefRight, _RefLeftClass, _RefRightClass,
+                                            inst, associators);
+      }
+      else
+      {
+        result = _assoc_create_refs_1toN_ST(broker, ctx, rslt, cop,
+                                            _ClassName, _RefRight, _RefLeft, _RefRightClass, _RefLeftClass,
+                                            inst, associators);
+      }
+
+      if ( result )
+      {
+        _CMPIZYPP_TRACE(1,("--- assoc_create_refs_1toN exited"));
+        return true;
+      }
+      _CMPIZYPP_TRACE(1,("--- assoc_create_refs_1toN failed"));
+      return false;
     }
-    catch ( CmpiStatus & rc )
-    {
-      return true;
-    }
-
-    CmpiObjectPath rop( cop.getNameSpace(), _ClassName ); // associations op
-
-
-
-
-
-    return false;
-  }
-
-  bool assoc_create_refs_1toN( CmpiBroker & broker,
-                               const CmpiContext & ctx,
-                               CmpiResult & rslt,
-                               const CmpiObjectPath & cop,
-                               const char * _ClassName,
-                               const char * _RefLeft,
-                               const char * _RefRight,
-                               const char * _RefLeftClass,
-                               const char * _RefRightClass,
-                               int inst,
-                               int associators )
-  {
-    _CMPIZYPP_TRACE(1,("--- assoc_create_refs_1toN called"));
-    if ( _assoc_create_refs_1toN( broker, ctx, rslt, cop,
-                                  _ClassName, _RefLeft, _RefRight, _RefLeftClass, _RefRightClass,
-                                  inst, associators ) )
-    {
-      _CMPIZYPP_TRACE(1,("--- assoc_create_refs_1toN exited"));
-      return true;
-    }
-    _CMPIZYPP_TRACE(1,("--- assoc_create_refs_1toN failed"));
-    return false;
-  }
 
 
   /** Method to check the input parameter resultClass, role and resultRole
@@ -244,5 +349,137 @@ namespace cmpizypp
     }
     _CMPIZYPP_TRACE(1,("--- _assoc_check_parameter_const exited: not responsible"));
     return false;
+  }
+
+  bool _assoc_create_inst_1toN( CmpiBroker & broker,
+                                const CmpiContext & ctx,
+                                CmpiResult & rslt,
+                                const CmpiObjectPath & cop,
+                                const char * _ClassName,
+                                const char * _RefLeft,
+                                const char * _RefRight,
+                                const char * _RefLeftClass,
+                                const char * _RefRightClass,
+                                int left,
+                                int inst)
+  {
+    _CMPIZYPP_TRACE(1,("--- _assoc_create_inst_1toN called"));
+    bool ret = false;
+    CmpiObjectPath op("","");
+
+    if( left == 0)
+    {
+      op = CmpiObjectPath(cop.getNameSpace(), _RefRightClass );
+    }
+    else
+    {
+      op = CmpiObjectPath(cop.getNameSpace(), _RefLeftClass );
+    }
+
+    if( op.isNull() )
+    {
+      CmpiStatus st( CMPI_RC_ERR_FAILED, "Create CMPIObjectPath failed.");
+      _CMPIZYPP_TRACE(1,("--- _assoc_create_inst_1toN failed: %s", st.msg() ) );
+      throw st;
+    }
+
+    CmpiEnumeration en = broker.enumInstanceNames( ctx, op );
+    if( en.isNull() )
+    {
+      CmpiStatus st( CMPI_RC_ERR_FAILED, "EnumInstanceNames failed.");
+      _CMPIZYPP_TRACE(1,("--- _assoc_create_inst_1toN failed: %s", st.msg() ) );
+      throw st;
+    }
+
+   /* this approach works only for 1 to N relations
+   * int <left> contains the information, which side of the association has
+   * only one instance
+   */
+    while( en.hasNext() )
+    {
+      CmpiData data = en.getNext();
+      ret = assoc_create_refs_1toN( broker, ctx, rslt, data,
+                                     _ClassName,_RefLeft,_RefRight,
+                                     _RefLeftClass,_RefRightClass,inst,0);
+    }
+    _CMPIZYPP_TRACE(1,("--- _assoc_create_inst_1toN exited"));
+    return ret;
+  }
+
+  bool assoc_create_inst_1toN( CmpiBroker & broker,
+                               const CmpiContext & ctx,
+                               CmpiResult & rslt,
+                               const CmpiObjectPath & cop,
+                               const char * _ClassName,
+                               const char * _RefLeft,
+                               const char * _RefRight,
+                               const char * _RefLeftClass,
+                               const char * _RefRightClass,
+                               int left,
+                               int inst)
+  {
+    _CMPIZYPP_TRACE(1,("--- _assoc_create_inst_1toN called"));
+    if ( _assoc_create_inst_1toN(broker, ctx, rslt, cop,
+                                 _ClassName, _RefLeft, _RefRight, _RefLeftClass, _RefRightClass, left, inst) )
+    {
+      _CMPIZYPP_TRACE(1,("--- _assoc_create_inst_1toN exited: successful"));
+      return true;
+    }
+    _CMPIZYPP_TRACE(1,("--- _assoc_create_inst_1toN exited: failed"));
+    return false;
+  }
+
+  CmpiInstance assoc_get_inst( CmpiBroker & broker,
+                               const CmpiContext & ctx,
+                               const CmpiObjectPath & cop,
+                               const char * _ClassName,
+                               const char * _RefLeft,
+                               const char * _RefRight)
+  {
+    _CMPIZYPP_TRACE(1,("--- assoc_get_inst called"));
+
+    CmpiData dtl = cop.getKey( _RefLeft );
+    CmpiObjectPath opl(dtl);
+    opl.setNameSpace( cop.getNameSpace() );
+    CmpiInstance ci = broker.getInstance( ctx, opl, NULL );
+    if( ci.isNull() )
+    {
+      CmpiStatus st( CMPI_RC_ERR_FAILED, "GetInstance of left reference failed.");
+      _CMPIZYPP_TRACE(1,("--- _assoc_get_inst failed: %s", st.msg() ) );
+      throw st;
+    }
+
+    CmpiData dtr = cop.getKey( _RefRight );
+    CmpiObjectPath opr(dtr);
+    opr.setNameSpace( cop.getNameSpace() );
+    ci = broker.getInstance( ctx, opr, NULL );
+    if( ci.isNull() )
+    {
+      CmpiStatus st( CMPI_RC_ERR_FAILED, "GetInstance of right reference failed.");
+      _CMPIZYPP_TRACE(1,("--- _assoc_get_inst failed: %s", st.msg() ) );
+      throw st;
+    }
+
+    CmpiObjectPath op( cop.getNameSpace(), _ClassName );
+    if( op.isNull() )
+    {
+      CmpiStatus st( CMPI_RC_ERR_FAILED, "Create CMPIObjectPath failed.");
+      _CMPIZYPP_TRACE(1,("--- _assoc_get_inst failed: %s", st.msg() ) );
+      throw st;
+    }
+
+    ci = CmpiInstance( op );
+    if( ci.isNull() )
+    {
+      CmpiStatus st( CMPI_RC_ERR_FAILED, "Create CMPIInstance failed.");
+      _CMPIZYPP_TRACE(1,("--- _assoc_get_inst failed: %s", st.msg() ) );
+      throw st;
+    }
+
+    ci.setProperty( _RefLeft, dtl );
+    ci.setProperty( _RefRight, dtr );
+
+    _CMPIZYPP_TRACE(1,("--- assoc_get_inst exited"));
+    return ci;
   }
 }

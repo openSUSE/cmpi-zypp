@@ -11,6 +11,18 @@ std::ostream & operator<<( std::ostream & str, const CmpiObjectPath & obj );
 namespace cmpizypp
 {
 
+  bool assoc_create_refs_1toN_ST( CmpiBroker & broker,
+                                  const CmpiContext & ctx,
+                                  CmpiResult & rslt,
+                                  const CmpiObjectPath & cop,
+                                  const char * _ClassName,
+                                  const char * _RefSource,
+                                  const char * _RefTarget,
+                                  const char * _RefSourceClass,
+                                  const char * _RefTargetClass,
+                                  int inst,
+                                  int associators );
+
   /** Method to create CMPIInstance(s) / CMPIObjectPath(s) of association.
    *
    * Combination of int <inst> and int <associators>:
@@ -48,6 +60,24 @@ namespace cmpizypp
                                     const char * resultClass,
                                     const char * role,
                                     const char * resultRole );
-}
 
+  bool assoc_create_inst_1toN( CmpiBroker & broker,
+                               const CmpiContext & ctx,
+                               CmpiResult & rslt,
+                               const CmpiObjectPath & cop,
+                               const char * _ClassName,
+                               const char * _RefLeft,
+                               const char * _RefRight,
+                               const char * _RefLeftClass,
+                               const char * _RefRightClass,
+                               int left,
+                               int inst);
+
+  CmpiInstance assoc_get_inst( CmpiBroker & broker,
+                               const CmpiContext & ctx,
+                               const CmpiObjectPath & cop,
+                               const char * _ClassName,
+                               const char * _RefLeft,
+                               const char * _RefRight);
+}
 #endif // SUSE_COMMON_H

@@ -1,20 +1,16 @@
 #ifndef SUSE_ZYPP_H
 #define SUSE_ZYPP_H
 
-#include <iosfwd>
+#include "zypp/ZYppFactory.h"
+#include "zypp/ZYpp.h"
+#include "zypp/TmpPath.h"
+#include "zypp/Glob.h"
+#include "zypp/PathInfo.h"
+#include "zypp/RepoManager.h"
+#include "zypp/Target.h"
+#include "zypp/ResPool.h"
 
-#include <zypp/base/String.h>
-#include <zypp/ZYppFactory.h>
-#include <zypp/ZYpp.h>
-#include <zypp/TmpPath.h>
-#include <zypp/Glob.h>
-#include <zypp/PathInfo.h>
-#include <zypp/RepoManager.h>
-#include <zypp/Target.h>
-#include <zypp/ResPool.h>
-
-using std::endl;
-#define _CMPIZYPP_TRACE( LV, FORMAT ) USR << "[" << LV << "] " << zypp::str::form FORMAT << std::endl;
+#define _CMPIZYPP_TRACE( LV, FORMAT ) USR << "[" << LV << "] " << str::form FORMAT << endl;
 
 namespace cmpizypp
 {
