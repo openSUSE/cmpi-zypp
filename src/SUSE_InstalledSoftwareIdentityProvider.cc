@@ -12,23 +12,21 @@
 #include <zypp/base/LogTools.h>
 
 #include "SUSE_zypp.h"
+#include "SUSE_Common.h"
 #include "SUSE_InstalledSoftwareIdentityProvider.h"
 
 using namespace zypp;
 using std::endl;
 
-std::ostream & operator<<( std::ostream & str, const CmpiObjectPath & obj )
-{
-  str << obj.getNameSpace().charPtr();
-  return str;
-}
-
 namespace cmpizypp
 {
   namespace
   {
-    const char * _ClassName = "SUSE_InstalledSoftwareIdentity";
-
+    const char * _ClassName     = "SUSE_InstalledSoftwareIdentity";
+    const char * _RefLeft       = "InstalledSoftware";
+    const char * _RefRight      = "System";
+    const char * _RefLeftClass  = "CIM_SoftwareIdentity";
+    const char * _RefRightClass = "CIM_System";
 
   } // namespace
 
@@ -99,46 +97,58 @@ namespace cmpizypp
 
 
   CmpiStatus SUSE_InstalledSoftwareIdentityProviderClass::associators( const CmpiContext& ctx, CmpiResult& rslt,
-      const CmpiObjectPath& op, const char* asscClass, const char* resultClass,
+      const CmpiObjectPath& cop, const char* asscClass, const char* resultClass,
       const char* role, const char* resultRole, const char** properties )
   {
     _CMPIZYPP_TRACE(1,("--- %s CMPI associators() called",_ClassName));
 
+    rslt.returnDone();
     _CMPIZYPP_TRACE(1,("--- %s CMPI associators() exited",_ClassName));
     return CmpiStatus(CMPI_RC_OK);
    }
 
   CmpiStatus SUSE_InstalledSoftwareIdentityProviderClass::associatorNames( const CmpiContext& ctx, CmpiResult& rslt,
-      const CmpiObjectPath& op, const char* assocClass, const char* resultClass,
+      const CmpiObjectPath& cop, const char* assocClass, const char* resultClass,
       const char* role, const char* resultRole )
   {
     _CMPIZYPP_TRACE(1,("--- %s CMPI associatorNames() called",_ClassName));
 
-    USR << op << endl;
-
+    rslt.returnDone();
     _CMPIZYPP_TRACE(1,("--- %s CMPI associatorNames() exited",_ClassName));
     return CmpiStatus(CMPI_RC_OK);
   }
 
   CmpiStatus SUSE_InstalledSoftwareIdentityProviderClass::references( const CmpiContext& ctx, CmpiResult& rslt,
-      const CmpiObjectPath& op, const char* resultClass, const char* role,
+      const CmpiObjectPath& cop, const char* resultClass, const char* role,
       const char** properties )
   {
     _CMPIZYPP_TRACE(1,("--- %s CMPI references() called",_ClassName));
 
-    USR << op << endl;
-
+    rslt.returnDone();
     _CMPIZYPP_TRACE(1,("--- %s CMPI references() exited",_ClassName));
     return CmpiStatus(CMPI_RC_OK);
   }
 
   CmpiStatus SUSE_InstalledSoftwareIdentityProviderClass::referenceNames( const CmpiContext& ctx, CmpiResult& rslt,
-      const CmpiObjectPath& op, const char* resultClass, const char* role )
+      const CmpiObjectPath& cop, const char* resultClass, const char* role )
   {
     _CMPIZYPP_TRACE(1,("--- %s CMPI referenceNames() called",_ClassName));
 
-    USR << op << endl;
+    CmpiObjectPath op( cop.getNameSpace(), _ClassName );
 
+    if ( !resultClass || op.classPathIsA( resultClass ) )
+    {
+      if ( assoc_check_parameter_const( cop, _RefLeft, _RefRight, _RefLeftClass, _RefRightClass,
+                                        NULL/*resultClass*/, role, NULL /*resultRole*/ ) )
+      {
+        assoc_create_refs_1toN( *broker, ctx, rslt, cop,
+                                _ClassName, _RefLeft, _RefRight, _RefLeftClass, _RefRightClass,
+                                0, 0 );
+        USR << op <<endl;
+      }
+    }
+
+    rslt.returnDone();
     _CMPIZYPP_TRACE(1,("--- %s CMPI referenceNames() exited",_ClassName));
     return CmpiStatus(CMPI_RC_OK);
  }

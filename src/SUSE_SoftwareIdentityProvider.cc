@@ -1,5 +1,6 @@
 
 #include <iostream>
+#include <zypp/base/LogTools.h>
 
 #include <cmpi/cmpimacs.h>
 #include <cmpi/cmpidt.h>
@@ -7,9 +8,6 @@
 #include <cmpi/CmpiBroker.h>
 #include <cmpi/CmpiArray.h>
 #include <cmpi/CmpiBooleanData.h>
-
-#include <zypp/base/String.h>
-#include <zypp/base/LogTools.h>
 
 #include "SUSE_zypp.h"
 #include "SUSE_SoftwareIdentityProvider.h"

@@ -19,22 +19,22 @@ namespace cmpizypp
 
       virtual CmpiStatus associators
           (const CmpiContext& ctx, CmpiResult& rslt,
-           const CmpiObjectPath& op, const char* asscClass, const char* resultClass,
+           const CmpiObjectPath& cop, const char* asscClass, const char* resultClass,
            const char* role, const char* resultRole, const char** properties);
 
       virtual CmpiStatus associatorNames
           (const CmpiContext& ctx, CmpiResult& rslt,
-           const CmpiObjectPath& op, const char* assocClass, const char* resultClass,
+           const CmpiObjectPath& cop, const char* assocClass, const char* resultClass,
            const char* role, const char* resultRole);
 
       virtual CmpiStatus references
           (const CmpiContext& ctx, CmpiResult& rslt,
-           const CmpiObjectPath& op, const char* resultClass, const char* role,
+           const CmpiObjectPath& cop, const char* resultClass, const char* role,
            const char** properties);
 
       virtual CmpiStatus referenceNames
           (const CmpiContext& ctx, CmpiResult& rslt,
-           const CmpiObjectPath& op, const char* resultClass, const char* role);
+           const CmpiObjectPath& cop, const char* resultClass, const char* role);
   };
 
 } // namespace cmpizypp
