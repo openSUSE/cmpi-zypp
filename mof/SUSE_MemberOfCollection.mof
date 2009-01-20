@@ -10,13 +10,13 @@
 
 
 // ===================================================================
-//      SUSE_SystemSpecificCollection 
+//      SUSE_MemberOfCollection
 // ===================================================================
 
 [ Provider("cmpi:cmpi-zypp"),
-  Description ("A System Specific Collection representing Available Software.")
+  Description ("Association between SystemSpecificCollection and SoftwareIdentity")
 ]
-class SUSE_SystemSpecificCollection : CIM_SystemSpecificCollection
+class SUSE_MemberOfCollection : CIM_MemberOfCollection
 { };
 
 

@@ -6,6 +6,8 @@ INSTALL( FILES
 	SUSE_InstalledSoftwareIdentity.sfcb.reg
 	SUSE_SystemSpecificCollection.mof
 	SUSE_SystemSpecificCollection.sfcb.reg
+	SUSE_MemberOfCollection.sfcb.reg
+	SUSE_MemberOfCollection.mof
 	deploy.mof
 	DESTINATION ${CMPIZYPP_DATA_DIR}/
 	)
