@@ -1,0 +1,5 @@
+[SUSE_SystemSpecificCollection]
+  provider: SUSE_SystemSpecificCollectionProvider
+  location: cmpi-zypp
+  type: instance
+  namespace: root/cimv2
