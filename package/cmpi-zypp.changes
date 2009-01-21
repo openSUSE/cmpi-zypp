@@ -1,4 +1,17 @@
 -------------------------------------------------------------------
+Wed Jan 21 11:20:49 CET 2009 - mc@suse.de
+
+- version 0.0.1
+- implement
+
+  * SUSE_HostedCollection 
+  * SUSE_InstalledSoftwareIdentity
+  * SUSE_MemberOfCollection
+  * SUSE_SystemSpecificCollection
+
+- fixes in SUSE_SoftwareIdentity
+
+-------------------------------------------------------------------
 Fri Jan  9 15:21:30 CET 2009 - mc@suse.de
 
 - initial version 0.0.0 
