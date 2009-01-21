@@ -17,7 +17,13 @@
   Description ("Association between System and SystemSpecificCollection")
 ]
 class SUSE_HostedCollection : CIM_HostedCollection
-{ 
+{
+      [Override ( "Antecedent" ),
+       Min ( 1 ),
+       Max ( 1 ),
+       Description ( "The scoping system." )]
+   CIM_ComputerSystem REF Antecedent;
+ 
       [Override ( "Dependent" ),
        Description (
           "The collection defined in the context of a system." )]

@@ -18,6 +18,10 @@
 ]
 class SUSE_InstalledSoftwareIdentity : CIM_InstalledSoftwareIdentity
 { 
+      [Key, Description (
+          "The system on which the software is installed." )]
+   CIM_ComputerSystem REF System;
+
       [Override ( "InstalledSoftware" ),
        Description ( "The SoftwareIdentity that is installed." )]
    SUSE_SoftwareIdentity REF InstalledSoftware;
