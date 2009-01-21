@@ -27,7 +27,10 @@ namespace cmpizypp
     const char * _RefLeft       = "Collection";
     const char * _RefRight      = "Member";
     const char * _RefLeftClass  = "CIM_Collection";
-    const char * _RefRightClass = "CIM_ManagedElement";
+    // FIXME: CIM_ManagedElement is too generic. So I used CIM_SoftwareIdentity as RightClass
+    //        Check, if this is correct/allowed.
+    //const char * _RefRightClass = "CIM_ManagedElement";
+    const char * _RefRightClass = "CIM_SoftwareIdentity";
 
   } // namespace
 
