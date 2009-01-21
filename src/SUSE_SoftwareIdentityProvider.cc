@@ -158,8 +158,8 @@ CmpiInstance SUSE_SoftwareIdentityProviderClass::makeSoftwareIdentityInstance( c
   unsigned size = 1;
   CmpiArray types( size, CMPI_string );
   CmpiArray values( size, CMPI_string );
-  std::string softwareFamily( "SUSE:1:36:" );
-  softwareFamily += solv.arch().c_str();
+  std::string softwareFamily( "SUSE:" );
+  softwareFamily += solv.ident().c_str();
 
   types[0] = CmpiString("CIM:SoftwareFamily");
   values[0] = CmpiString(softwareFamily.c_str());
