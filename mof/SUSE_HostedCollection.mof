@@ -17,6 +17,11 @@
   Description ("Association between System and SystemSpecificCollection")
 ]
 class SUSE_HostedCollection : CIM_HostedCollection
-{ };
+{ 
+      [Override ( "Dependent" ),
+       Description (
+          "The collection defined in the context of a system." )]
+   SUSE_SystemSpecificCollection REF Dependent;
+};
 
 

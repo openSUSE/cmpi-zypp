@@ -17,6 +17,14 @@
   Description ("Association between SystemSpecificCollection and SoftwareIdentity")
 ]
 class SUSE_MemberOfCollection : CIM_MemberOfCollection
-{ };
+{ 
+   [Override ( "Collection" ),
+       Description ( "Overwrite a CIM_Collection." )]
+   SUSE_SystemSpecificCollection REF Collection;
+
+   [Override ( "Member" ),
+       Description ( "Overwrite a CIM_ManagedElement." )]
+   SUSE_SoftwareIdentity REF Member;
+};
 
 

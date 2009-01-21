@@ -17,6 +17,10 @@
   Description ("Association between System and SoftwareIdentity")
 ]
 class SUSE_InstalledSoftwareIdentity : CIM_InstalledSoftwareIdentity
-{ };
+{ 
+      [Override ( "InstalledSoftware" ),
+       Description ( "The SoftwareIdentity that is installed." )]
+   SUSE_SoftwareIdentity REF InstalledSoftware;
+};
 
 

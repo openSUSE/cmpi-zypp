@@ -26,7 +26,7 @@ namespace cmpizypp
     const char * _ClassName     = "SUSE_InstalledSoftwareIdentity";
     const char * _RefLeft       = "InstalledSoftware";
     const char * _RefRight      = "System";
-    const char * _RefLeftClass  = "CIM_SoftwareIdentity";
+    const char * _RefLeftClass  = "SUSE_SoftwareIdentity";
     const char * _RefRightClass = "CIM_System";
 
   } // namespace

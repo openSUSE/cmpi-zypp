@@ -26,7 +26,7 @@ namespace cmpizypp
     const char * _RefLeft       = "Antecedent";
     const char * _RefRight      = "Dependent";
     const char * _RefLeftClass  = "CIM_System";
-    const char * _RefRightClass = "CIM_SystemSpecificCollection";
+    const char * _RefRightClass = "SUSE_SystemSpecificCollection";
 
   } // namespace
 
