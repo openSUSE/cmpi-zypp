@@ -1,0 +1,5 @@
+[SUSE_HostedCollection]
+  provider: SUSE_HostedCollectionProvider
+  location: cmpi-zypp
+  type: instance association
+  namespace: root/cimv2

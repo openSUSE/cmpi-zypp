@@ -90,9 +90,6 @@ namespace cmpizypp
     return CmpiObjectPath( cop.getNameSpace(), targetName );
   }
 
-
-
-
   bool _assoc_create_refs_1toN_ST( CmpiBroker & broker,
                                    const CmpiContext & ctx,
                                    CmpiResult & rslt,
@@ -436,11 +433,15 @@ namespace cmpizypp
                                const char * _RefLeft,
                                const char * _RefRight)
   {
-    _CMPIZYPP_TRACE(1,("--- assoc_get_inst called"));
+    CmpiObjectPath tcop( cop );
+    _CMPIZYPP_TRACE(1,("--- assoc_get_inst called: %s", tcop.toString().charPtr()));
 
     CmpiData dtl = cop.getKey( _RefLeft );
     CmpiObjectPath opl(dtl);
     opl.setNameSpace( cop.getNameSpace() );
+
+    _CMPIZYPP_TRACE(1,("call getInstance on : LEFT"));
+
     CmpiInstance ci = broker.getInstance( ctx, opl, NULL );
     if( ci.isNull() )
     {
@@ -452,6 +453,9 @@ namespace cmpizypp
     CmpiData dtr = cop.getKey( _RefRight );
     CmpiObjectPath opr(dtr);
     opr.setNameSpace( cop.getNameSpace() );
+
+    _CMPIZYPP_TRACE(1,("call getInstance on : RIGHT"));
+
     ci = broker.getInstance( ctx, opr, NULL );
     if( ci.isNull() )
     {
