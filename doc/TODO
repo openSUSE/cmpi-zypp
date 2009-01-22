@@ -1,0 +1,13 @@
+
+- find one CIM_ComputerSystem for associations of SUSE_InstalledSoftwareIdentity
+  and SUSE_HostedCollection. Don't know if it is possible that there are more
+  then one modeled inside of one namespace. 
+  Maybe search for it in every constructor of a provider and store it in 
+  a global variable. We need to store the two keys CreationClassName and Name
+
+- find a way to provide a filter object to the common assoc_* functions.
+
+- is it possible to release the zypp lock after exit of a provider function?
+  If a new zyppacc object is created, will the lock automatically enabled again?
+
+
