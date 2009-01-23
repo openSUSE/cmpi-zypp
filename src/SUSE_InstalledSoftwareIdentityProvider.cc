@@ -42,6 +42,8 @@ namespace cmpizypp
   {
     _CMPIZYPP_TRACE(1,("--- %s CMPI EnumInstanceNames() called",_ClassName));
 
+    CmpiObjectPath csop = get_this_computersystem(*broker, ctx, cop);
+
     // zypp init
     zypp::scoped_ptr<ZyppAC> zyppac;
     try
@@ -55,46 +57,26 @@ namespace cmpizypp
       return rc;
     }
 
-    CmpiObjectPath op(cop.getNameSpace(), _RefRightClass); // CIM_System
-    if( op.isNull() )
-    {
-      CmpiStatus st( CMPI_RC_ERR_FAILED, "Create CMPIObjectPath failed.");
-      _CMPIZYPP_TRACE(1,("--- enumInstanceNames() failed: %s", st.msg() ) );
-      return st;
-    }
-    CmpiEnumeration en = broker->enumInstanceNames( ctx, op );
-    if( en.isNull() )
-    {
-      CmpiStatus st( CMPI_RC_ERR_FAILED, "EnumInstanceNames failed.");
-      _CMPIZYPP_TRACE(1,("--- enumInstanceNames() failed: %s", st.msg() ) );
-      return st;
-    }
-
     CmpiObjectPath rop( cop.getNameSpace(), _ClassName );
 
-    while( en.hasNext() )
+    ResPool pool( zyppac->pool() );
+    for_( it, pool.begin(), pool.end() )
     {
-      CmpiData data = en.getNext();
+      if( !(*it).status().isInstalled() )
+        continue;
 
-      ResPool pool( zyppac->pool() );
-      for_( it, pool.begin(), pool.end() )
+      CmpiObjectPath iop = SUSE_SoftwareIdentityProviderClass::makeSoftwareIdentityOP(*it, *zyppac, cop);
+      CmpiInstance ci( rop );
+      if( ci.isNull() )
       {
-        if( !(*it).status().isInstalled() )
-          continue;
-
-        CmpiObjectPath iop = SUSE_SoftwareIdentityProviderClass::makeSoftwareIdentityOP(*it, *zyppac, cop);
-        CmpiInstance ci( rop );
-        if( ci.isNull() )
-        {
-          return CmpiStatus(CMPI_RC_ERR_FAILED, "Create CmpiInstance failed.");
-        }
-        ci.setProperty( _RefLeft, iop );
-        ci.setProperty( _RefRight, data );
-
-        CmpiObjectPath tmp = ci.getObjectPath();
-        tmp.setNameSpace(cop.getNameSpace());
-        rslt.returnData(tmp);
+        return CmpiStatus(CMPI_RC_ERR_FAILED, "Create CmpiInstance failed.");
       }
+      ci.setProperty( _RefLeft, iop );
+      ci.setProperty( _RefRight, csop );
+
+      CmpiObjectPath tmp = ci.getObjectPath();
+      tmp.setNameSpace(cop.getNameSpace());
+      rslt.returnData(tmp);
     }
 
     rslt.returnDone();
@@ -105,6 +87,8 @@ namespace cmpizypp
   CmpiStatus SUSE_InstalledSoftwareIdentityProviderClass::enumInstances( const CmpiContext & ctx, CmpiResult & rslt, const CmpiObjectPath & cop, const char** properties )
   {
     _CMPIZYPP_TRACE(1,("--- %s CMPI EnumInstances() called",_ClassName));
+
+    CmpiObjectPath csop = get_this_computersystem(*broker, ctx, cop);
 
     // zypp init
     zypp::scoped_ptr<ZyppAC> zyppac;
@@ -119,44 +103,23 @@ namespace cmpizypp
       return rc;
     }
 
-    CmpiObjectPath op(cop.getNameSpace(), _RefRightClass); // CIM_System
-    if( op.isNull() )
-    {
-      CmpiStatus st( CMPI_RC_ERR_FAILED, "Create CMPIObjectPath failed.");
-      _CMPIZYPP_TRACE(1,("--- enumInstanceNames() failed: %s", st.msg() ) );
-      return st;
-    }
-    CmpiEnumeration en = broker->enumInstanceNames( ctx, op );
-    if( en.isNull() )
-    {
-      CmpiStatus st( CMPI_RC_ERR_FAILED, "EnumInstanceNames failed.");
-      _CMPIZYPP_TRACE(1,("--- enumInstanceNames() failed: %s", st.msg() ) );
-      return st;
-    }
-
     CmpiObjectPath rop( cop.getNameSpace(), _ClassName );
-
-    while( en.hasNext() )
+    ResPool pool( zyppac->pool() );
+    for_( it, pool.begin(), pool.end() )
     {
-      CmpiData data = en.getNext();
+      if( !(*it).status().isInstalled() )
+        continue;
 
-      ResPool pool( zyppac->pool() );
-      for_( it, pool.begin(), pool.end() )
+      CmpiObjectPath iop = SUSE_SoftwareIdentityProviderClass::makeSoftwareIdentityOP(*it, *zyppac, cop);
+      CmpiInstance ci( rop );
+      if( ci.isNull() )
       {
-        if( !(*it).status().isInstalled() )
-          continue;
-
-        CmpiObjectPath iop = SUSE_SoftwareIdentityProviderClass::makeSoftwareIdentityOP(*it, *zyppac, cop);
-        CmpiInstance ci( rop );
-        if( ci.isNull() )
-        {
-          return CmpiStatus(CMPI_RC_ERR_FAILED, "Create CmpiInstance failed.");
-        }
-        ci.setProperty( _RefLeft, iop );
-        ci.setProperty( _RefRight, data );
-
-        rslt.returnData(ci);
+        return CmpiStatus(CMPI_RC_ERR_FAILED, "Create CmpiInstance failed.");
       }
+      ci.setProperty( _RefLeft, iop );
+      ci.setProperty( _RefRight, csop );
+
+      rslt.returnData(ci);
     }
 
     rslt.returnDone();

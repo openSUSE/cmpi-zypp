@@ -41,12 +41,16 @@ namespace cmpizypp
   {
     _CMPIZYPP_TRACE(1,("--- %s CMPI EnumInstanceNames() called",_ClassName));
 
-    if(!assoc_create_inst_1toN( *broker, ctx, rslt, cop, _ClassName, _RefLeft, _RefRight, _RefLeftClass, _RefRightClass, 1, 0) )
+    CmpiObjectPath csop = get_this_computersystem(*broker, ctx, cop);
+    bool ret = assoc_create_refs_1toN( *broker, ctx, rslt, csop,
+                                       _ClassName,_RefLeft,_RefRight,
+                                       _RefLeftClass,_RefRightClass,0,0);
+    if(!ret)
     {
       CmpiStatus st( CMPI_RC_ERR_FAILED, "EnumInstanceNames failed." );
       return st;
     }
-
+    
     rslt.returnDone();
     _CMPIZYPP_TRACE(1,("--- %s CMPI EnumInstanceNames() exited",_ClassName));
     return CmpiStatus(CMPI_RC_OK);
@@ -56,12 +60,16 @@ namespace cmpizypp
   {
     _CMPIZYPP_TRACE(1,("--- %s CMPI EnumInstances() called",_ClassName));
 
-    if(!assoc_create_inst_1toN( *broker, ctx, rslt, cop, _ClassName, _RefLeft, _RefRight, _RefLeftClass, _RefRightClass, 1, 1) )
+    CmpiObjectPath csop = get_this_computersystem(*broker, ctx, cop);
+    bool ret = assoc_create_refs_1toN( *broker, ctx, rslt, csop,
+                                       _ClassName,_RefLeft,_RefRight,
+                                       _RefLeftClass,_RefRightClass,1,0);
+    if(!ret)
     {
       CmpiStatus st( CMPI_RC_ERR_FAILED, "EnumInstances failed." );
       return st;
     }
-
+    
     rslt.returnDone();
     _CMPIZYPP_TRACE(1,("--- %s CMPI EnumInstances() exited",_ClassName));
     return CmpiStatus(CMPI_RC_OK);

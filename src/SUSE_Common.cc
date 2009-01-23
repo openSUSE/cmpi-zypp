@@ -395,6 +395,7 @@ namespace cmpizypp
     return false;
   }
 
+  // FIXME: currently not used. Perhaps we can remove it
   bool _assoc_create_inst_1toN( CmpiBroker & broker,
                                 const CmpiContext & ctx,
                                 CmpiResult & rslt,
