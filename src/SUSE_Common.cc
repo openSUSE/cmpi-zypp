@@ -1,5 +1,6 @@
 
 #include <cmpi/CmpiObjectPath.h>
+#include <cmpiutil/base.h>
 #include <zypp/base/LogTools.h>
 #include <zypp/base/String.h>
 #include <zypp/base/PtrTypes.h>
@@ -20,7 +21,53 @@ std::ostream & operator<<( std::ostream & str, const CmpiObjectPath & obj )
 
 namespace cmpizypp
 {
+  CmpiObjectPath get_this_computersystem(CmpiBroker & broker, const CmpiContext& ctx, const CmpiObjectPath & cop)
+  {
+    _CMPIZYPP_TRACE(4,("--- get_this_computersystem() called"));
 
+    char hostname[256];
+    if(cmpiutilGetHostName(hostname, sizeof(hostname)) == NULL)
+    {
+      CmpiStatus st(CMPI_RC_ERR_FAILED, "Cannot get hostname");
+      _CMPIZYPP_TRACE(1,("--- get_this_computersystem() failed: %s", st.msg()));
+      throw st;
+    }
+
+    _CMPIZYPP_TRACE(1,("Our Hostname is: %s", hostname));
+
+    CmpiObjectPath op( cop.getNameSpace(), "CIM_ComputerSystem");
+    CmpiEnumeration en = broker.enumInstanceNames( ctx, op );
+    if( en.isNull() )
+    {
+      CmpiStatus st( CMPI_RC_ERR_FAILED, "No CIM_ComputerSystem found.");
+      _CMPIZYPP_TRACE(1,("--- get_this_computersystem failed: %s", st.msg() ) );
+      throw st;
+    }
+
+    CmpiObjectPath data("", "");
+    bool found = false;
+    while( en.hasNext() )
+    {
+      data = en.getNext();
+      const char *name = data.getKey("Name");
+
+      _CMPIZYPP_TRACE(1,("Found object with Hostname is: %s", name));
+
+      if(name && strcmp(name, hostname) == 0)
+      {
+	found = true;
+	break;
+      }
+    }
+
+    if(!found)
+    {
+      CmpiStatus st( CMPI_RC_ERR_FAILED, "No CIM_ComputerSystem found.");
+      _CMPIZYPP_TRACE(1,("--- get_this_computersystem failed: %s", st.msg() ) );
+      throw st;
+    }
+    return data;
+  }
 
   /* ---------------------------------------------------------------------------*/
   /*                      _assoc_targetClass_Name()                             */

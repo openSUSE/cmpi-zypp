@@ -11,6 +11,10 @@ std::ostream & operator<<( std::ostream & str, const CmpiObjectPath & obj );
 namespace cmpizypp
 {
 
+  CmpiObjectPath get_this_computersystem(CmpiBroker & broker,
+                                         const CmpiContext& ctx,
+					 const CmpiObjectPath & cop);
+
   bool assoc_create_refs_1toN_ST( CmpiBroker & broker,
                                   const CmpiContext & ctx,
                                   CmpiResult & rslt,
