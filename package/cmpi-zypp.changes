@@ -1,4 +1,15 @@
 -------------------------------------------------------------------
+Tue Jan 27 16:07:54 CET 2009 - mc@suse.de
+
+- version 0.0.2
+  * Implement filter for association functions
+  * make sure that our associations to CIM_System get the correct object
+  * Require CIM_ComputerSystem
+  * Be more specific and require our SUSE_* Classes in the
+    association providers.
+  * Set IdentityInfoType CIM:SoftwareFamily to "SUSE:<RPM_NAME>" 
+
+-------------------------------------------------------------------
 Wed Jan 21 11:20:49 CET 2009 - mc@suse.de
 
 - version 0.0.1
