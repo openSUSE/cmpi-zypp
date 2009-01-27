@@ -10,7 +10,7 @@
 #include "zypp/Target.h"
 #include "zypp/ResPool.h"
 
-#define _CMPIZYPP_TRACE( LV, FORMAT ) USR << "[" << LV << "] " << str::form FORMAT << endl;
+#define _CMPIZYPP_TRACE( LV, FORMAT ) USR << "[" << LV << "] " << zypp::str::form FORMAT << std::endl;
 
 namespace cmpizypp
 {
