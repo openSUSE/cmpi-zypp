@@ -39,6 +39,8 @@ Authors:
     Michael Andres <ma@suse.de>
     Michael Calmer <mc@suse.de>
 
+%debug_package
+
 %prep
 %setup -q
 
