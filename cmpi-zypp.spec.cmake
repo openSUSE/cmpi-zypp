@@ -25,6 +25,7 @@ BuildRequires:  cmake
 BuildRequires:  libzypp-devel sblim-cmpi-devel 
 BuildRequires:  doxygen gcc-c++ gettext-devel 
 BuildRequires:  sblim-sfcb cmpi-provider-register
+BuildRequires:  sblim-cmpiutil-devel
 Recommends:     sblim-sfcb
 PreReq:         cmpi-provider-register
 %define mofdir  %{_datadir}/%{name}/ 
