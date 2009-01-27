@@ -50,7 +50,7 @@ namespace cmpizypp
       CmpiStatus st( CMPI_RC_ERR_FAILED, "EnumInstanceNames failed." );
       return st;
     }
-    
+
     rslt.returnDone();
     _CMPIZYPP_TRACE(1,("--- %s CMPI EnumInstanceNames() exited",_ClassName));
     return CmpiStatus(CMPI_RC_OK);
@@ -69,7 +69,7 @@ namespace cmpizypp
       CmpiStatus st( CMPI_RC_ERR_FAILED, "EnumInstances failed." );
       return st;
     }
-    
+
     rslt.returnDone();
     _CMPIZYPP_TRACE(1,("--- %s CMPI EnumInstances() exited",_ClassName));
     return CmpiStatus(CMPI_RC_OK);
@@ -103,8 +103,9 @@ namespace cmpizypp
       if ( assoc_check_parameter_const( cop, _RefLeft, _RefRight, _RefLeftClass, _RefRightClass,
                                         resultClass, role, resultRole ) )
       {
+        SUSE_HostedCollectionFilter filter(get_this_computersystem(*broker, ctx, cop));
         if(! assoc_create_refs_1toN( *broker, ctx, rslt, cop, _ClassName,
-                                     _RefLeft, _RefRight, _RefLeftClass, _RefRightClass, 1, 1) )
+                                     _RefLeft, _RefRight, _RefLeftClass, _RefRightClass, 1, 1, filter ) )
         {
           CmpiStatus st(CMPI_RC_ERR_FAILED, "Create references failed.");
           _CMPIZYPP_TRACE(1,("--- CMPI referenceNames() failed."));
@@ -131,8 +132,9 @@ namespace cmpizypp
       if ( assoc_check_parameter_const( cop, _RefLeft, _RefRight, _RefLeftClass, _RefRightClass,
                                         resultClass, role, resultRole ) )
       {
+        SUSE_HostedCollectionFilter filter(get_this_computersystem(*broker, ctx, cop));
         if(! assoc_create_refs_1toN( *broker, ctx, rslt, cop, _ClassName,
-                                     _RefLeft, _RefRight, _RefLeftClass, _RefRightClass, 0, 1) )
+                                     _RefLeft, _RefRight, _RefLeftClass, _RefRightClass, 0, 1, filter ) )
         {
           CmpiStatus st(CMPI_RC_ERR_FAILED, "Create references failed.");
           _CMPIZYPP_TRACE(1,("--- CMPI referenceNames() failed."));
@@ -159,8 +161,9 @@ namespace cmpizypp
       if ( assoc_check_parameter_const( cop, _RefLeft, _RefRight, _RefLeftClass, _RefRightClass,
                                         NULL/*resultClass*/, role, NULL /*resultRole*/ ) )
       {
+        SUSE_HostedCollectionFilter filter(get_this_computersystem(*broker, ctx, cop));
         if(! assoc_create_refs_1toN( *broker, ctx, rslt, cop, _ClassName,
-                                     _RefLeft, _RefRight, _RefLeftClass, _RefRightClass, 1, 0) )
+                                     _RefLeft, _RefRight, _RefLeftClass, _RefRightClass, 1, 0, filter ) )
         {
           CmpiStatus st(CMPI_RC_ERR_FAILED, "Create references failed.");
           _CMPIZYPP_TRACE(1,("--- CMPI referenceNames() failed."));
@@ -186,8 +189,9 @@ namespace cmpizypp
       if ( assoc_check_parameter_const( cop, _RefLeft, _RefRight, _RefLeftClass, _RefRightClass,
                                         NULL/*resultClass*/, role, NULL /*resultRole*/ ) )
       {
+        SUSE_HostedCollectionFilter filter(get_this_computersystem(*broker, ctx, cop));
         if(! assoc_create_refs_1toN( *broker, ctx, rslt, cop, _ClassName,
-                                     _RefLeft, _RefRight, _RefLeftClass, _RefRightClass, 0, 0) )
+                                     _RefLeft, _RefRight, _RefLeftClass, _RefRightClass, 0, 0, filter ) )
         {
           CmpiStatus st(CMPI_RC_ERR_FAILED, "Create references failed.");
           _CMPIZYPP_TRACE(1,("--- CMPI referenceNames() failed."));
@@ -199,6 +203,90 @@ namespace cmpizypp
     rslt.returnDone();
     _CMPIZYPP_TRACE(1,("--- %s CMPI referenceNames() exited",_ClassName));
     return CmpiStatus(CMPI_RC_OK);
+ }
+
+/* -------------------------------------------------------------------------- */
+
+ SUSE_HostedCollectionFilter::SUSE_HostedCollectionFilter(const CmpiObjectPath &op)
+ : SUSE_AssocFilter()
+ , csop(op)
+ { }
+
+ bool SUSE_HostedCollectionFilter::filterInstance(const CmpiInstance &ci, bool associators) const
+ {
+    _CMPIZYPP_TRACE(1,("--- SUSE_HostedCollectionFilter::filterInstance called"));
+    USR << ci << endl;
+    CmpiString CSName = csop.getKey("CreationClassName");
+    CmpiString Name = csop.getKey("Name");
+
+    const char *filterCSName = "";
+    const char *filterName   = "";
+    if( ! associators )
+    {
+      CmpiObjectPath filterop = ci.getProperty( _RefLeft );
+      filterCSName = filterop.getKey("CreationClassName");
+      filterName   = filterop.getKey("Name");
+    }
+    else
+    {
+      CmpiInstance lci( ci );
+      if( lci.instanceIsA( _RefLeftClass ) )
+      {
+        _CMPIZYPP_TRACE(1,("--- SUSE_HostedCollectionFilter::filterInstance exited: true"));
+        return true;
+      }
+
+      filterCSName = ci.getProperty("CreationClassName");
+      filterName   = ci.getProperty("Name");
+    }
+
+    if(CSName.equals(filterCSName) && Name.equals(filterName) )
+    {
+      _CMPIZYPP_TRACE(1,("--- SUSE_HostedCollectionFilter::filterInstance exited: true"));
+      return true;
+    }
+    else
+    {
+      _CMPIZYPP_TRACE(1,("--- SUSE_HostedCollectionFilter::filterInstance exited: false"));
+      return false;
+    }
+ }
+
+ bool SUSE_HostedCollectionFilter::filterObjectPath(const CmpiObjectPath &op, bool associators) const
+ {
+    _CMPIZYPP_TRACE(1,("--- SUSE_HostedCollectionFilter::filterObjectPath called"));
+    USR << op << endl;
+    CmpiString CSName = csop.getKey("CreationClassName");
+    CmpiString Name = csop.getKey("Name");
+
+    CmpiObjectPath filterop("", "");
+    if( ! associators )
+    {
+      filterop = op.getKey( _RefLeft );
+    }
+    else
+    {
+      if( op.classPathIsA( _RefLeftClass ) )
+      {
+        _CMPIZYPP_TRACE(1,("--- SUSE_HostedCollectionFilter::filterObjectPath exited: true"));
+        return true;
+      }
+
+      filterop = op;
+    }
+    CmpiString filterCSName = filterop.getKey("CreationClassName");
+    CmpiString filterName = filterop.getKey("Name");
+
+    if(filterCSName.equals(CSName) && filterName.equals(Name) )
+    {
+      _CMPIZYPP_TRACE(1,("--- SUSE_HostedCollectionFilter::filterObjectPath exited: true"));
+      return true;
+    }
+    else
+    {
+      _CMPIZYPP_TRACE(1,("--- SUSE_HostedCollectionFilter::filterObjectPath exited: false"));
+      return false;
+    }
  }
 
 } // namespace cmpizypp

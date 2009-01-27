@@ -2,11 +2,13 @@
 #define SUSE_COMMON_H
 
 #include <iosfwd>
+#include "SUSE_AssocFilter.h"
 
 using std::endl;
 
 class CmpiObjectPath;
 std::ostream & operator<<( std::ostream & str, const CmpiObjectPath & obj );
+std::ostream & operator<<( std::ostream & str, const CmpiInstance & ci );
 
 namespace cmpizypp
 {
@@ -25,7 +27,8 @@ namespace cmpizypp
                                   const char * _RefSourceClass,
                                   const char * _RefTargetClass,
                                   int inst,
-                                  int associators );
+                                  int associators,
+			          const SUSE_AssocFilter &filter = SUSE_AssocFilter() );
 
   /** Method to create CMPIInstance(s) / CMPIObjectPath(s) of association.
    *
@@ -48,7 +51,8 @@ namespace cmpizypp
                                const char * _RefLeftClass,
                                const char * _RefRightClass,
                                int inst,
-                               int associators );
+                               int associators,
+			       const SUSE_AssocFilter &filter = SUSE_AssocFilter() );
 
 
   /** Method to check the input parameter resultClass, role and resultRole
@@ -75,7 +79,8 @@ namespace cmpizypp
                                const char * _RefLeftClass,
                                const char * _RefRightClass,
                                int left,
-                               int inst);
+                               int inst,
+			       const SUSE_AssocFilter &filter = SUSE_AssocFilter() );
 
   CmpiInstance assoc_get_inst( CmpiBroker & broker,
                                const CmpiContext & ctx,
@@ -83,5 +88,6 @@ namespace cmpizypp
                                const char * _ClassName,
                                const char * _RefLeft,
                                const char * _RefRight);
+
 }
 #endif // SUSE_COMMON_H

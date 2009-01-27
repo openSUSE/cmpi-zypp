@@ -157,8 +157,9 @@ namespace cmpizypp
       {
         if ( cop.classPathIsA(_RefLeftClass) )  //SUSE_SoftwareIdentity
         {
+          SUSE_InstalledSoftwareIdentityFilter filter(get_this_computersystem(*broker, ctx, cop));
           if(! assoc_create_refs_1toN_ST( *broker, ctx, rslt, cop, _ClassName,
-                                          _RefLeft, _RefRight, _RefLeftClass, _RefRightClass, 1, 1) )
+                                          _RefLeft, _RefRight, _RefLeftClass, _RefRightClass, 1, 1, filter ) )
           {
             CmpiStatus st(CMPI_RC_ERR_FAILED, "Create references failed.");
             _CMPIZYPP_TRACE(1,("--- CMPI referenceNames() failed."));
@@ -222,8 +223,9 @@ namespace cmpizypp
       {
         if ( cop.classPathIsA(_RefLeftClass) )  //SUSE_SoftwareIdentity
         {
+          SUSE_InstalledSoftwareIdentityFilter filter(get_this_computersystem(*broker, ctx, cop));
           if(! assoc_create_refs_1toN_ST( *broker, ctx, rslt, cop, _ClassName,
-                                          _RefLeft, _RefRight, _RefLeftClass, _RefRightClass, 0, 1) )
+                                          _RefLeft, _RefRight, _RefLeftClass, _RefRightClass, 0, 1, filter) )
           {
             CmpiStatus st(CMPI_RC_ERR_FAILED, "Create references failed.");
             _CMPIZYPP_TRACE(1,("--- CMPI referenceNames() failed."));
@@ -293,8 +295,9 @@ namespace cmpizypp
       {
         if ( cop.classPathIsA(_RefLeftClass) )  //SUSE_SoftwareIdentity
         {
+          SUSE_InstalledSoftwareIdentityFilter filter(get_this_computersystem(*broker, ctx, cop));
           if(! assoc_create_refs_1toN_ST( *broker, ctx, rslt, cop, _ClassName,
-                                          _RefLeft, _RefRight, _RefLeftClass, _RefRightClass, 1, 0) )
+                                          _RefLeft, _RefRight, _RefLeftClass, _RefRightClass, 1, 0, filter ) )
           {
             CmpiStatus st(CMPI_RC_ERR_FAILED, "Create references failed.");
             _CMPIZYPP_TRACE(1,("--- CMPI referenceNames() failed."));
@@ -368,8 +371,9 @@ namespace cmpizypp
       {
         if ( cop.classPathIsA(_RefLeftClass) )  //SUSE_SoftwareIdentity
         {
+          SUSE_InstalledSoftwareIdentityFilter filter(get_this_computersystem(*broker, ctx, cop));
           if(! assoc_create_refs_1toN_ST( *broker, ctx, rslt, cop, _ClassName,
-                                           _RefLeft, _RefRight, _RefLeftClass, _RefRightClass, 0, 0) )
+                                           _RefLeft, _RefRight, _RefLeftClass, _RefRightClass, 0, 0, filter ) )
           {
             CmpiStatus st(CMPI_RC_ERR_FAILED, "Create references failed.");
             _CMPIZYPP_TRACE(1,("--- CMPI referenceNames() failed."));
@@ -431,6 +435,77 @@ namespace cmpizypp
     _CMPIZYPP_TRACE(1,("--- %s CMPI referenceNames() exited",_ClassName));
     return CmpiStatus(CMPI_RC_OK);
  }
+
+
+ SUSE_InstalledSoftwareIdentityFilter::SUSE_InstalledSoftwareIdentityFilter(const CmpiObjectPath &op)
+ : SUSE_AssocFilter()
+ , csop(op)
+ { }
+
+ bool SUSE_InstalledSoftwareIdentityFilter::filterInstance(const CmpiInstance &ci, bool associators) const
+ {
+    _CMPIZYPP_TRACE(1,("--- SUSE_InstalledSoftwareIdentityFilter::filterInstance called"));
+    USR << ci << endl;
+    CmpiString CSName = csop.getKey("CreationClassName");
+    CmpiString Name = csop.getKey("Name");
+
+    const char *filterCSName = "";
+    const char *filterName   = "";
+    if( ! associators )
+    {
+      CmpiObjectPath filterop = ci.getProperty( _RefRight );
+      filterCSName = filterop.getKey("CreationClassName");
+      filterName   = filterop.getKey("Name");
+    }
+    else
+    {
+      filterCSName = ci.getProperty("CreationClassName");
+      filterName   = ci.getProperty("Name");
+    }
+
+    if(CSName.equals(filterCSName) && Name.equals(filterName) )
+    {
+      _CMPIZYPP_TRACE(1,("--- SUSE_InstalledSoftwareIdentityFilter::filterInstance exited: true"));
+      return true;
+    }
+    else
+    {
+      _CMPIZYPP_TRACE(1,("--- SUSE_InstalledSoftwareIdentityFilter::filterInstance exited: false"));
+      return false;
+    }
+ }
+
+ bool SUSE_InstalledSoftwareIdentityFilter::filterObjectPath(const CmpiObjectPath &op, bool associators) const
+ {
+    _CMPIZYPP_TRACE(1,("--- SUSE_InstalledSoftwareIdentityFilter::filterObjectPath called"));
+    USR << op << endl;
+    CmpiString CSName = csop.getKey("CreationClassName");
+    CmpiString Name = csop.getKey("Name");
+
+    CmpiObjectPath filterop("", "");
+    if( ! associators )
+    {
+      filterop = op.getKey( _RefRight );
+    }
+    else
+    {
+      filterop = op;
+    }
+    CmpiString filterCSName = filterop.getKey("CreationClassName");
+    CmpiString filterName = filterop.getKey("Name");
+
+    if(filterCSName.equals(CSName) && filterName.equals(Name) )
+    {
+      _CMPIZYPP_TRACE(1,("--- SUSE_InstalledSoftwareIdentityFilter::filterObjectPath exited: true"));
+      return true;
+    }
+    else
+    {
+      _CMPIZYPP_TRACE(1,("--- SUSE_InstalledSoftwareIdentityFilter::filterObjectPath exited: false"));
+      return false;
+    }
+ }
+
 
 } // namespace cmpizypp
 

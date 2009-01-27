@@ -4,6 +4,8 @@
 #include <cmpi/CmpiInstanceMI.h>
 #include <cmpi/CmpiAssociationMI.h>
 
+#include "SUSE_AssocFilter.h"
+
 namespace cmpizypp
 {
   /**
@@ -35,6 +37,19 @@ namespace cmpizypp
       virtual CmpiStatus referenceNames
           (const CmpiContext& ctx, CmpiResult& rslt,
            const CmpiObjectPath& cop, const char* resultClass, const char* role);
+  };
+
+  class SUSE_InstalledSoftwareIdentityFilter: public SUSE_AssocFilter
+  {
+    private:
+      CmpiObjectPath csop;
+
+    public:
+      SUSE_InstalledSoftwareIdentityFilter(const CmpiObjectPath &op);
+      virtual ~SUSE_InstalledSoftwareIdentityFilter() {};
+
+      virtual bool filterInstance(const CmpiInstance &ci, bool associators) const;
+      virtual bool filterObjectPath(const CmpiObjectPath &op, bool associators) const;
   };
 
 } // namespace cmpizypp

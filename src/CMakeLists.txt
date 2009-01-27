@@ -23,6 +23,7 @@ SET( CMPIZYPP_HEADERS
   SUSE_SystemSpecificCollectionProvider.h
   SUSE_MemberOfCollectionProvider.h
   SUSE_HostedCollectionProvider.h
+  SUSE_AssocFilter.h
 )
 
 ADD_LIBRARY(cmpi-zypp SHARED ${CMPIZYPP_SRCS})

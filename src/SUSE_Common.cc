@@ -1,11 +1,11 @@
 
 #include <cmpi/CmpiObjectPath.h>
-#include <cmpiutil/base.h>
-#include <zypp/base/LogTools.h>
-#include <zypp/base/String.h>
-#include <zypp/base/PtrTypes.h>
-
 #include <cmpi/CmpiResult.h>
+#include <cmpiutil/base.h>
+
+#include <zypp/base/String.h>
+#include <zypp/base/LogTools.h>
+#include <zypp/base/PtrTypes.h>
 
 #include "SUSE_Common.h"
 #include "SUSE_zypp.h"
@@ -16,6 +16,13 @@ std::ostream & operator<<( std::ostream & str, const CmpiObjectPath & obj )
 {
   CmpiObjectPath op( obj );
   str << op.toString().charPtr() << " " << op.getKeyCount() << " Keys";
+  return str;
+}
+
+std::ostream & operator<<( std::ostream & str, const CmpiInstance & ci )
+{
+  CmpiInstance lci( ci );
+  str << lci.toString().charPtr();
   return str;
 }
 
@@ -147,7 +154,8 @@ namespace cmpizypp
                                    const char * _RefSourceClass,
                                    const char * _RefTargetClass,
                                    int inst,
-                                   int associators )
+                                   int associators,
+                                   const SUSE_AssocFilter &filter )
   {
     CmpiInstance cis( broker.getInstance( ctx, cop, NULL ) ); // source instance
 
@@ -181,7 +189,8 @@ namespace cmpizypp
       while (en.hasNext() )
       {
         CmpiInstance ci = en.getNext();
-        rslt.returnData( ci );
+	if( filter.filterInstance(ci, true) )
+	  rslt.returnData( ci );
       }
     }
     else
@@ -213,12 +222,14 @@ namespace cmpizypp
                 /* associators = 0 && inst = 0 */
             CmpiObjectPath tmp = ci.getObjectPath();
             tmp.setNameSpace(cop.getNameSpace());
-            rslt.returnData(tmp);
+	    if( filter.filterObjectPath(tmp, false) )
+              rslt.returnData(tmp);
           }
           else
           {
                 /* associators = 0 && inst = 1 */
-            rslt.returnData(ci);
+	    if( filter.filterInstance(ci, false) )
+              rslt.returnData(ci);
           }
         }
         else if(inst == 0)
@@ -227,7 +238,8 @@ namespace cmpizypp
           //rslt.returnData(data);
           CmpiObjectPath tmp = (CmpiObjectPath)data;
           tmp.setNameSpace(cop.getNameSpace());
-          rslt.returnData(tmp);
+	  if( filter.filterObjectPath(tmp, true) )
+            rslt.returnData(tmp);
         }
       }
     }
@@ -244,12 +256,13 @@ namespace cmpizypp
                                   const char * _RefSourceClass,
                                   const char * _RefTargetClass,
                                   int inst,
-                                  int associators )
+                                  int associators,
+                                  const SUSE_AssocFilter &filter )
   {
     _CMPIZYPP_TRACE(1,("--- assoc_create_refs_1toN_ST called"));
     if ( _assoc_create_refs_1toN_ST( broker, ctx, rslt, cop,
                                   _ClassName, _RefSource, _RefTarget, _RefSourceClass, _RefTargetClass,
-                                  inst, associators ) )
+                                  inst, associators, filter ) )
     {
       _CMPIZYPP_TRACE(1,("--- assoc_create_refs_1toN_ST exited"));
       return true;
@@ -285,7 +298,8 @@ namespace cmpizypp
                                  const char * _RefLeftClass,
                                  const char * _RefRightClass,
                                  int inst,
-                                 int associators )
+                                 int associators,
+                                 const SUSE_AssocFilter &filter )
     {
       _CMPIZYPP_TRACE(1,("--- assoc_create_refs_1toN called"));
       bool result = false;
@@ -293,13 +307,13 @@ namespace cmpizypp
       {
         result = _assoc_create_refs_1toN_ST(broker, ctx, rslt, cop,
                                             _ClassName, _RefLeft, _RefRight, _RefLeftClass, _RefRightClass,
-                                            inst, associators);
+                                            inst, associators, filter);
       }
       else
       {
         result = _assoc_create_refs_1toN_ST(broker, ctx, rslt, cop,
                                             _ClassName, _RefRight, _RefLeft, _RefRightClass, _RefLeftClass,
-                                            inst, associators);
+                                            inst, associators, filter);
       }
 
       if ( result )
@@ -406,7 +420,8 @@ namespace cmpizypp
                                 const char * _RefLeftClass,
                                 const char * _RefRightClass,
                                 int left,
-                                int inst)
+                                int inst,
+                                const SUSE_AssocFilter &filter )
   {
     _CMPIZYPP_TRACE(1,("--- _assoc_create_inst_1toN called"));
     bool ret = false;
@@ -445,7 +460,7 @@ namespace cmpizypp
       CmpiData data = en.getNext();
       ret = assoc_create_refs_1toN( broker, ctx, rslt, data,
                                      _ClassName,_RefLeft,_RefRight,
-                                     _RefLeftClass,_RefRightClass,inst,0);
+                                     _RefLeftClass,_RefRightClass,inst,0, filter);
     }
     _CMPIZYPP_TRACE(1,("--- _assoc_create_inst_1toN exited"));
     return ret;
@@ -461,11 +476,12 @@ namespace cmpizypp
                                const char * _RefLeftClass,
                                const char * _RefRightClass,
                                int left,
-                               int inst)
+                               int inst,
+                               const SUSE_AssocFilter &filter)
   {
     _CMPIZYPP_TRACE(1,("--- _assoc_create_inst_1toN called"));
     if ( _assoc_create_inst_1toN(broker, ctx, rslt, cop,
-                                 _ClassName, _RefLeft, _RefRight, _RefLeftClass, _RefRightClass, left, inst) )
+                                 _ClassName, _RefLeft, _RefRight, _RefLeftClass, _RefRightClass, left, inst, filter) )
     {
       _CMPIZYPP_TRACE(1,("--- _assoc_create_inst_1toN exited: successful"));
       return true;
@@ -534,4 +550,5 @@ namespace cmpizypp
     _CMPIZYPP_TRACE(1,("--- assoc_get_inst exited"));
     return ci;
   }
-}
+
+} // end namespace cmpizypp
