@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Jan 28 14:36:27 CET 2009 - ma@suse.de
+
+- version 0.0.3
+  * improve and implement missing association filters
+  * Basic Software Inventory Profile is done
+
+-------------------------------------------------------------------
 Tue Jan 27 16:07:54 CET 2009 - mc@suse.de
 
 - version 0.0.2
