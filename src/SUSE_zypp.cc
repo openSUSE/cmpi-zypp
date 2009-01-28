@@ -128,42 +128,43 @@ namespace cmpizypp
                         slv.repository().alias().c_str() ) );
   }
 
-  PoolItem ZyppAC::findSoftwareIdentityInstanceId( const std::string & id_r ) const
+  PoolItem ZyppAC::findSoftwareIdentityInstanceId( const C_Str & id_r ) const
   {
     // SoftwareIdentity::InstanceId = SUSE:<name>-<version>-<release>.<arch>@<repoalias>
+    const std::string id( id_r );
 
-    if ( ! str::hasPrefix( id_r, "SUSE:" ) )
+    if ( ! str::hasPrefix( id, "SUSE:" ) )
       return PoolItem();
 
     // check repo
-    std::string::size_type rdelim( id_r.find( "@" ) );
+    std::string::size_type rdelim( id.find( "@" ) );
     if ( rdelim == std::string::npos )
       return PoolItem();
 
-    Repository repo( sat::Pool::instance().reposFind( id_r.substr( rdelim+1) ) );
+    Repository repo( sat::Pool::instance().reposFind( id.substr( rdelim+1) ) );
     if ( ! repo )
       return PoolItem();
 
     // check n-v-r.a from behind
-    std::string::size_type delim = id_r.rfind( ".", rdelim );
+    std::string::size_type delim = id.rfind( ".", rdelim );
     if ( delim == std::string::npos )
       return PoolItem();
 
-    Arch arch( id_r.substr( delim+1, rdelim-delim-1 ) );
+    Arch arch( id.substr( delim+1, rdelim-delim-1 ) );
 
     // v-r starts at one but last '-'
     rdelim = delim;
-    delim = id_r.rfind( "-", rdelim );
+    delim = id.rfind( "-", rdelim );
     if ( delim == std::string::npos )
       return PoolItem();
-    delim = id_r.rfind( "-", delim-1 );
+    delim = id.rfind( "-", delim-1 );
     if ( delim == std::string::npos )
       return PoolItem();
 
-    Edition ed( id_r.substr( delim+1, rdelim-delim-1 ) );
+    Edition ed( id.substr( delim+1, rdelim-delim-1 ) );
 
     // eveythig before is name (except the leading "SUSE:")
-    std::string identstring( id_r.substr( 5, delim-5 ) );
+    std::string identstring( id.substr( 5, delim-5 ) );
 
     DBG << "Lookup:" << endl;
     DBG << identstring << endl;
@@ -183,6 +184,11 @@ namespace cmpizypp
     }
 
     return PoolItem();
+  }
+
+  bool ZyppAC::isSystemSoftwareIdentityInstanceId( const  C_Str & id_r )
+  {
+    return str::hasSuffix( id_r, Repository::systemRepoAlias() );
   }
 
 }

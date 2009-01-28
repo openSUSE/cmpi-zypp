@@ -32,9 +32,11 @@ namespace cmpizypp
       std::string SoftwareIdentityInstanceId( const zypp::sat::Solvable & slv ) const;
       std::string SoftwareIdentityInstanceId( const zypp::PoolItem & pi ) const
       { return SoftwareIdentityInstanceId( pi.satSolvable() ); }
-      /** \see \ref SoftwareIdentityInstanceId */
-      zypp::PoolItem findSoftwareIdentityInstanceId( const std::string & id_r ) const;
 
+      /** \see \ref SoftwareIdentityInstanceId */
+      zypp::PoolItem findSoftwareIdentityInstanceId( const zypp::C_Str & id_r ) const;
+
+      static bool isSystemSoftwareIdentityInstanceId( const zypp::C_Str & id_r );
   };
 }
 
