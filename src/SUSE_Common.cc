@@ -189,7 +189,7 @@ namespace cmpizypp
       while (en.hasNext() )
       {
         CmpiInstance ci = en.getNext();
-	if( filter.filterInstance(ci, true) )
+	if( filter.filterInstance(cop, _RefSource, ci, true) )
 	  rslt.returnData( ci );
       }
     }
@@ -222,13 +222,13 @@ namespace cmpizypp
                 /* associators = 0 && inst = 0 */
             CmpiObjectPath tmp = ci.getObjectPath();
             tmp.setNameSpace(cop.getNameSpace());
-	    if( filter.filterObjectPath(tmp, false) )
+	    if( filter.filterObjectPath(cop, _RefSource, tmp, false) )
               rslt.returnData(tmp);
           }
           else
           {
                 /* associators = 0 && inst = 1 */
-	    if( filter.filterInstance(ci, false) )
+	    if( filter.filterInstance(cop, _RefSource, ci, false) )
               rslt.returnData(ci);
           }
         }
@@ -238,7 +238,7 @@ namespace cmpizypp
           //rslt.returnData(data);
           CmpiObjectPath tmp = (CmpiObjectPath)data;
           tmp.setNameSpace(cop.getNameSpace());
-	  if( filter.filterObjectPath(tmp, true) )
+	  if( filter.filterObjectPath(cop, _RefSource, tmp, true) )
             rslt.returnData(tmp);
         }
       }

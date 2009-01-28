@@ -49,8 +49,8 @@ namespace cmpizypp
       SUSE_HostedCollectionFilter(const CmpiObjectPath &op);
       virtual ~SUSE_HostedCollectionFilter() {};
 
-      virtual bool filterInstance(const CmpiInstance &ci, bool associators) const;
-      virtual bool filterObjectPath(const CmpiObjectPath &op, bool associators) const;
+      virtual bool filterInstance(const CmpiObjectPath &scop, const char * _RefSource, const CmpiInstance &ci, bool associators) const;
+      virtual bool filterObjectPath(const CmpiObjectPath &scop, const char * _RefSource, const CmpiObjectPath &op, bool associators) const;
   };
 
 } // namespace cmpizypp

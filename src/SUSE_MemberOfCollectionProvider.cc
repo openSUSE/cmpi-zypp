@@ -228,13 +228,17 @@ namespace cmpizypp
         }
         else // ( cop.classPathIsA(_RefRightClass) )  //SUSE_SoftwareIdentity
         {
-          if(! assoc_create_refs_1toN_ST( *broker, ctx, rslt, cop, _ClassName,
-                                          _RefRight, _RefLeft, _RefRightClass, _RefLeftClass, 1, 1) )
-          {
-            CmpiStatus st(CMPI_RC_ERR_FAILED, "Create references failed.");
-            _CMPIZYPP_TRACE(1,("--- CMPI referenceNames() failed."));
-            return st;
-          }
+          const char * copInstanceId = cop.getKey("InstanceId");
+           if ( ! ZyppAC::isSystemSoftwareIdentityInstanceId( copInstanceId ) )
+           {
+             if(! assoc_create_refs_1toN_ST( *broker, ctx, rslt, cop, _ClassName,
+                  _RefRight, _RefLeft, _RefRightClass, _RefLeftClass, 1, 1) )
+             {
+               CmpiStatus st(CMPI_RC_ERR_FAILED, "Create references failed.");
+               _CMPIZYPP_TRACE(1,("--- CMPI referenceNames() failed."));
+               return st;
+             }
+           }
         }
 
       }
@@ -298,16 +302,18 @@ namespace cmpizypp
         }
         else // ( cop.classPathIsA(_RefRightClass) )  //SUSE_SoftwareIdentity
         {
-          if(! assoc_create_refs_1toN_ST( *broker, ctx, rslt, cop, _ClassName,
-                                          _RefRight, _RefLeft, _RefRightClass, _RefLeftClass, 0, 1) )
-          {
-            CmpiStatus st(CMPI_RC_ERR_FAILED, "Create references failed.");
-            _CMPIZYPP_TRACE(1,("--- CMPI referenceNames() failed."));
-            return st;
-          }
+          const char * copInstanceId = cop.getKey("InstanceId");
+           if ( ! ZyppAC::isSystemSoftwareIdentityInstanceId( copInstanceId ) )
+           {
+             if(! assoc_create_refs_1toN_ST( *broker, ctx, rslt, cop, _ClassName,
+                  _RefRight, _RefLeft, _RefRightClass, _RefLeftClass, 0, 1) )
+             {
+               CmpiStatus st(CMPI_RC_ERR_FAILED, "Create references failed.");
+               _CMPIZYPP_TRACE(1,("--- CMPI referenceNames() failed."));
+               return st;
+             }
+           }
         }
-
-        USR << op <<endl;
       }
     }
 
@@ -374,16 +380,18 @@ namespace cmpizypp
         }
         else //( cop.classPathIsA(_RefRightClass) )  //SUSE_SoftwareIdentity
         {
-          if(! assoc_create_refs_1toN_ST( *broker, ctx, rslt, cop, _ClassName,
-                                          _RefRight, _RefLeft, _RefRightClass, _RefLeftClass, 1, 0) )
+          const char * copInstanceId = cop.getKey("InstanceId");
+          if ( ! ZyppAC::isSystemSoftwareIdentityInstanceId( copInstanceId ) )
           {
-            CmpiStatus st(CMPI_RC_ERR_FAILED, "Create references failed.");
-            _CMPIZYPP_TRACE(1,("--- CMPI referenceNames() failed."));
-            return st;
+            if(! assoc_create_refs_1toN_ST( *broker, ctx, rslt, cop, _ClassName,
+                 _RefRight, _RefLeft, _RefRightClass, _RefLeftClass, 1, 0) )
+            {
+              CmpiStatus st(CMPI_RC_ERR_FAILED, "Create references failed.");
+              _CMPIZYPP_TRACE(1,("--- CMPI referenceNames() failed."));
+              return st;
+            }
           }
         }
-
-        USR << op <<endl;
       }
     }
 
@@ -452,16 +460,18 @@ namespace cmpizypp
         }
         else // ( cop.classPathIsA(_RefRightClass) )  //SUSE_SoftwareIdentity
         {
-          if(! assoc_create_refs_1toN_ST( *broker, ctx, rslt, cop, _ClassName,
-                                           _RefRight, _RefLeft, _RefRightClass, _RefLeftClass, 0, 0) )
+          const char * copInstanceId = cop.getKey("InstanceId");
+          if ( ! ZyppAC::isSystemSoftwareIdentityInstanceId( copInstanceId ) )
           {
-            CmpiStatus st(CMPI_RC_ERR_FAILED, "Create references failed.");
-            _CMPIZYPP_TRACE(1,("--- CMPI referenceNames() failed."));
-            return st;
+            if(! assoc_create_refs_1toN_ST( *broker, ctx, rslt, cop, _ClassName,
+                 _RefRight, _RefLeft, _RefRightClass, _RefLeftClass, 0, 0) )
+            {
+              CmpiStatus st(CMPI_RC_ERR_FAILED, "Create references failed.");
+              _CMPIZYPP_TRACE(1,("--- CMPI referenceNames() failed."));
+              return st;
+            }
           }
         }
-
-        USR << op <<endl;
       }
     }
 

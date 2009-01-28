@@ -442,45 +442,30 @@ namespace cmpizypp
  , csop(op)
  { }
 
- bool SUSE_InstalledSoftwareIdentityFilter::filterInstance(const CmpiInstance &ci, bool associators) const
- {
-    _CMPIZYPP_TRACE(1,("--- SUSE_InstalledSoftwareIdentityFilter::filterInstance called"));
-    USR << ci << endl;
-    CmpiString CSName = csop.getKey("CreationClassName");
-    CmpiString Name = csop.getKey("Name");
 
-    const char *filterCSName = "";
-    const char *filterName   = "";
-    if( ! associators )
-    {
-      CmpiObjectPath filterop = ci.getProperty( _RefRight );
-      filterCSName = filterop.getKey("CreationClassName");
-      filterName   = filterop.getKey("Name");
-    }
-    else
-    {
-      filterCSName = ci.getProperty("CreationClassName");
-      filterName   = ci.getProperty("Name");
-    }
-
-    if(CSName.equals(filterCSName) && Name.equals(filterName) )
-    {
-      _CMPIZYPP_TRACE(1,("--- SUSE_InstalledSoftwareIdentityFilter::filterInstance exited: true"));
-      return true;
-    }
-    else
-    {
-      _CMPIZYPP_TRACE(1,("--- SUSE_InstalledSoftwareIdentityFilter::filterInstance exited: false"));
-      return false;
-    }
- }
-
- bool SUSE_InstalledSoftwareIdentityFilter::filterObjectPath(const CmpiObjectPath &op, bool associators) const
+ bool SUSE_InstalledSoftwareIdentityFilter::filterObjectPath(const CmpiObjectPath &scop, const char * _RefSource, const CmpiObjectPath &op, bool associators) const
  {
     _CMPIZYPP_TRACE(1,("--- SUSE_InstalledSoftwareIdentityFilter::filterObjectPath called"));
-    USR << op << endl;
-    CmpiString CSName = csop.getKey("CreationClassName");
-    CmpiString Name = csop.getKey("Name");
+    USR << scop << " " <<_RefSource << ": " <<  op << endl;
+
+    if ( strcmp(_RefSource,_RefLeft) != 0 )
+    {
+      INT << "Unexpected filter!" << endl;
+      return false;
+    }
+
+    const char * instanceId = scop.getKey("InstanceId");
+    if ( ! instanceId )
+    {
+      INT << "No instance Id!" << endl;
+      return false;
+    }
+
+    if ( ! ZyppAC::isSystemSoftwareIdentityInstanceId( instanceId ) )
+    {
+      _CMPIZYPP_TRACE(1,("--- SUSE_InstalledSoftwareIdentityFilter::filterObjectPath exited: false"));
+      return false;
+    }
 
     CmpiObjectPath filterop("", "");
     if( ! associators )
@@ -491,6 +476,10 @@ namespace cmpizypp
     {
       filterop = op;
     }
+
+    CmpiString CSName = csop.getKey("CreationClassName");
+    CmpiString Name = csop.getKey("Name");
+
     CmpiString filterCSName = filterop.getKey("CreationClassName");
     CmpiString filterName = filterop.getKey("Name");
 
@@ -506,6 +495,12 @@ namespace cmpizypp
     }
  }
 
+
+ bool SUSE_InstalledSoftwareIdentityFilter::filterInstance(const CmpiObjectPath &scop, const char * _RefSource, const CmpiInstance &ci, bool associators) const
+ {
+    _CMPIZYPP_TRACE(1,("--- SUSE_InstalledSoftwareIdentityFilter::filterInstance called"));
+    return filterObjectPath(scop, _RefSource, ci.getObjectPath(), associators);
+ }
 
 } // namespace cmpizypp
 
