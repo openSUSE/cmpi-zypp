@@ -1,0 +1,60 @@
+
+Notes about the Software-Update-Profile
+
+* the install() functions only allow to install a single RPM
+  and automatic dependency resolving is forbidden.
+  (forget for now installing software bundles)
+
+  Dependencies should be modeled and the client should
+  walk them backwards and install each of them separately.
+  (This is how we understand this profile)
+
+  This cannot work because we have situations where
+
+    packageA requires packageB and packageB requires packageA
+
+  install() take only one RPM per call, so this situation cannot be
+  solved.
+
+  Possible solutions:
+
+  1) add an install() function which takes an array of software identities
+     which should be installed.
+
+  2) add a parameter which allows install() to solve dependencies automatically
+
+  The second one is better to solve this problem. The first option is also
+  use full if a user has selected more then one RPM in a UI which should be
+  installed.
+
+* CIM_ConcreteJob
+
+  Is it possible to use this for a communication with the client and ask questions?
+  Like:
+  * accept keys
+  * display automatic resolved dependencies and get a OK for installation
+  * media change (Please insert CD2)
+  * etc.
+
+* Unclear InstallCharacteristics
+
+  * Force Install
+  * Install
+  * Update
+
+  - How would these behave in case of automatic resolve dependencies?
+  - How should these behave in case of patterns and patches?
+
+* Patterns and Patches
+
+  New types of SoftwareIdentity required (Classifications) ?
+
+  They are not really SoftwareBundles. Install a Bundle would require
+  that all software in it must be installed and the Bundle itself
+  but be installed (need a representation in the system)
+
+  Both - Pattern and Patches - are only "satisfied" but not "installed".
+
+  Install a Patch means: Update any package listed to a version (or higher)
+  listed in the patch. Only update, no new installation.
+
