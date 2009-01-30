@@ -1,0 +1,30 @@
+//#pragma namespace ("root/cimv2")
+
+
+// -------------------------------------------------------------------
+// *******************************************************************
+//      Classes
+// *******************************************************************
+// -------------------------------------------------------------------
+
+
+
+// ===================================================================
+//      SUSE_InstallationServiceAffectsSoftwareIdentity
+// ===================================================================
+
+[ Provider("cmpi:cmpi-zypp"),
+  Description ("Association between SUSE_SoftwareInstallationService and SUSE_SoftwareIdentity")
+]
+class SUSE_InstallationServiceAffectsSoftwareIdentity : CIM_ServiceAffectsElement
+{ 
+   [Override ( "AffectedElement" ),
+       Description ( "Overwrite a CIM_ManagedElement." )]
+   SUSE_SoftwareIdentity REF AffectedElement;
+
+   [Override ( "AffectingElement" ),
+       Description ( "Overwrite a CIM_Service." )]
+   SUSE_SoftwareInstallationService REF AffectingElement;
+};
+
+

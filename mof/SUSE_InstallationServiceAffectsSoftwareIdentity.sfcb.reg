@@ -1,0 +1,5 @@
+[SUSE_InstallationServiceAffectsSoftwareIdentity]
+  provider: SUSE_InstallationServiceAffectsSoftwareIdentityProvider
+  location: cmpi-zypp
+  type: instance association
+  namespace: root/cimv2
