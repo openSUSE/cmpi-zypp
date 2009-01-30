@@ -4,4 +4,5 @@
 #pragma include ("SUSE_SystemSpecificCollection.mof")
 #pragma include ("SUSE_MemberOfCollection.mof")
 #pragma include ("SUSE_HostedCollection.mof")
+#pragma include ("SUSE_SoftwareInstallationService.mof")
 
