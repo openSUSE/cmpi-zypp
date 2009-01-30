@@ -1,0 +1,5 @@
+[SUSE_SoftwareInstallationServiceCapabilities]
+  provider: SUSE_SoftwareInstallationServiceCapabilitiesProvider
+  location: cmpi-zypp
+  type: instance
+  namespace: root/cimv2

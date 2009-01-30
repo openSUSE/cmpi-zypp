@@ -1,0 +1,23 @@
+//#pragma namespace ("root/cimv2")
+
+
+// -------------------------------------------------------------------
+// *******************************************************************
+//      Classes
+// *******************************************************************
+// -------------------------------------------------------------------
+
+
+
+// ===================================================================
+//      SUSE_SoftwareInstallationServiceCapabilities
+// ===================================================================
+
+[ Provider("cmpi:cmpi-zypp"),
+  Description ("A Class which provide SoftwareInstallationServiceCapabilities.")
+]
+class SUSE_SoftwareInstallationServiceCapabilities : CIM_SoftwareInstallationServiceCapabilities
+{ 
+};
+
+
