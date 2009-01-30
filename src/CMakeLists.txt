@@ -15,6 +15,7 @@ SET( CMPIZYPP_SRCS
   SUSE_MemberOfCollectionProvider.cc
   SUSE_HostedCollectionProvider.cc
   SUSE_SoftwareInstallationServiceProvider.cc
+  SUSE_InstallationServiceAffectsSoftwareIdentityProvider.cc
 )
 SET( CMPIZYPP_HEADERS
   SUSE_Common.h
@@ -26,6 +27,7 @@ SET( CMPIZYPP_HEADERS
   SUSE_HostedCollectionProvider.h
   SUSE_AssocFilter.h
   SUSE_SoftwareInstallationServiceProvider.h
+  SUSE_InstallationServiceAffectsSoftwareIdentityProvider.h
 )
 
 ADD_LIBRARY(cmpi-zypp SHARED ${CMPIZYPP_SRCS})
