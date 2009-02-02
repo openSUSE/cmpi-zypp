@@ -1,0 +1,30 @@
+//#pragma namespace ("root/cimv2")
+
+
+// -------------------------------------------------------------------
+// *******************************************************************
+//      Classes
+// *******************************************************************
+// -------------------------------------------------------------------
+
+
+
+// ===================================================================
+//      SUSE_ElementCapabilities
+// ===================================================================
+
+[ Provider("cmpi:cmpi-zypp"),
+  Description ("Association between SoftwareInstallationService and its capabilities")
+]
+class SUSE_ElementCapabilities : CIM_ElementCapabilities
+{
+   [Override ( "ManagedElement" ),
+       Description ( "Overwrite a CIM_ManagedElement." )]
+   SUSE_SoftwareInstallationService REF ManagedElement;
+
+   [Override ( "Capabilities" ),
+       Description ( "Overwrite a CIM_Capabilities." )]
+   SUSE_SoftwareInstallationServiceCapabilities REF Capabilities;
+};
+
+

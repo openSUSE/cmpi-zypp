@@ -1,0 +1,5 @@
+[SUSE_ElementCapabilities]
+  provider: SUSE_ElementCapabilitiesProvider
+  location: cmpi-zypp
+  type: instance association
+  namespace: root/cimv2

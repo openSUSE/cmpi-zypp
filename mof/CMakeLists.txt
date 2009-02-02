@@ -16,6 +16,8 @@ INSTALL( FILES
 	SUSE_InstallationServiceAffectsSoftwareIdentity.sfcb.reg
 	SUSE_SoftwareInstallationServiceCapabilities.mof
 	SUSE_SoftwareInstallationServiceCapabilities.sfcb.reg
+        SUSE_ElementCapabilities.mof
+        SUSE_ElementCapabilities.sfcb.reg
 	deploy.mof
 	DESTINATION ${CMPIZYPP_DATA_DIR}/
 	)
