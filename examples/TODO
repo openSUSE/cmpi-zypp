@@ -1,0 +1,24 @@
+
+- list_packages.py works with a test repom but not with real life data from my system.
+  Have to check why.
+
+  Traceback (most recent call last):
+    File "./list_packages.py", line 32, in <module>
+      for package in system._GetAssociators( namespace, 'SUSE_InstalledSoftwareIdentity' ):
+    File "/usr/lib/python2.6/site-packages/powerCIM/cim.py", line 348, in _GetAssociators
+      resultRole=resultRole)
+    File "/usr/lib/python2.6/site-packages/powerCIM/meta.py", line 50, in myFunc
+      ret = func(self, *args,**kws)
+    File "/usr/lib/python2.6/site-packages/powerCIM/wbemconnection.py", line 231, in Associators
+      return self.connection.Associators(name,**params)
+    File "/usr/lib/python2.6/site-packages/pywbem/cim_operations.py", line 696, in Associators
+      **params)
+    File "/usr/lib/python2.6/site-packages/pywbem/cim_operations.py", line 178, in imethodcall
+      reply_dom = minidom.parseString(resp_xml)
+    File "/usr/lib/python2.6/site-packages/_xmlplus/dom/minidom.py", line 1925, in parseString
+      return expatbuilder.parseString(string)
+    File "/usr/lib/python2.6/site-packages/_xmlplus/dom/expatbuilder.py", line 942, in parseString
+      return builder.parseString(string)
+    File "/usr/lib/python2.6/site-packages/_xmlplus/dom/expatbuilder.py", line 223, in parseString
+      parser.Parse(string, True)
+  xml.parsers.expat.ExpatError: not well-formed (invalid token): line 31864, column 4

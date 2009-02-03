@@ -1,0 +1,17 @@
+
+Some example applications using powerCIM (http://en.opensuse.org/PowerCIM)
+
+#>  zypper ar http://download.opensuse.org/repositories/home:/mmrazik/openSUSE_Factory powerCIM
+#>  zypper in powerCIM
+
+
+In each example you must define 4 variables to access the WEBMserver.
+Instead of editing each file you can write your values to ~/.cmpi-zypp.
+(one value per line, in the sequence above)
+(*** do 'chmod 600 ~/.cmpi-zypp' to protect the password! )
+
+# WBEMServer = 'https://localhost:5989'
+# login      = 'root'
+# password   = '*******'
+# namespace  = 'root/cimv2'
+
