@@ -8,3 +8,5 @@
 #pragma include ("SUSE_InstallationServiceAffectsSoftwareIdentity.mof")
 #pragma include ("SUSE_SoftwareInstallationServiceCapabilities.mof")
 #pragma include ("SUSE_ElementCapabilities.mof")
+#pragma include ("SUSE_HostedInstallationService.mof")
+

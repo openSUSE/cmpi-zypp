@@ -1,0 +1,5 @@
+[SUSE_HostedInstallationService]
+  provider: SUSE_HostedInstallationServiceProvider
+  location: cmpi-zypp
+  type: instance association
+  namespace: root/cimv2
