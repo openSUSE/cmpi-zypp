@@ -30,6 +30,7 @@ namespace cmpizypp
 SUSE_SoftwareInstallationServiceProviderClass::SUSE_SoftwareInstallationServiceProviderClass( const CmpiBroker & mbp, const CmpiContext & ctx )
   : CmpiBaseMI( mbp, ctx )
   , CmpiInstanceMI( mbp, ctx )
+  , CmpiMethodMI( mbp, ctx )
 {
 }
 
@@ -120,8 +121,44 @@ CmpiStatus SUSE_SoftwareInstallationServiceProviderClass::getInstance( const Cmp
   return CmpiStatus(CMPI_RC_OK);
 }
 
+CmpiStatus SUSE_SoftwareInstallationServiceProviderClass::invokeMethod (const CmpiContext &ctx, CmpiResult &rslt,
+                                                                        const CmpiObjectPath &ref, const char *methodName,
+                                                                        const CmpiArgs &in, CmpiArgs &out)
+{
+  _CMPIZYPP_TRACE(1,("--- %s CMPI invokeMethod() called with method: %s",_ClassName, methodName));
+
+  if( ::strcasecmp( ref.getClassName().charPtr(), _ClassName) != 0 )
+  {
+    return CmpiStatus(CMPI_RC_ERR_NOT_SUPPORTED, "invalid classname");
+  }
+  CmpiStatus st(CMPI_RC_ERR_NOT_SUPPORTED);
+
+  if( ::strcasecmp( methodName, "InstallFromSoftwareIdentity" ) == 0)
+  {
+    st = this->installFromSoftwareIdentity(ctx, rslt, ref, in, out);
+  }
+
+  _CMPIZYPP_TRACE(1,("--- %s CMPI invokeMethod() exited",_ClassName));
+  return st;
+}
+
+/* ========================= private ================================== */
+CmpiStatus SUSE_SoftwareInstallationServiceProviderClass::installFromSoftwareIdentity(const CmpiContext &ctx,
+                                                                                      CmpiResult &rslt,
+                                                                                      const CmpiObjectPath &ref,
+                                                                                      const CmpiArgs &in, CmpiArgs &out)
+{
+  CmpiStatus st(CMPI_RC_ERR_NOT_SUPPORTED);
+  _CMPIZYPP_TRACE(1,("--- %s CMPI installFromSoftwareIdentity() called.",_ClassName));
+
+
+  _CMPIZYPP_TRACE(1,("--- %s CMPI installFromSoftwareIdentity() exited.",_ClassName));
+  return st;
+}
+
 } // namespace cmpizypp
 
 CMProviderBase( SUSE_SoftwareInstallationServiceProvider );
 
 CMInstanceMIFactory( cmpizypp::SUSE_SoftwareInstallationServiceProviderClass, SUSE_SoftwareInstallationServiceProvider );
+CMMethodMIFactory( cmpizypp::SUSE_SoftwareInstallationServiceProviderClass, SUSE_SoftwareInstallationServiceProvider );
