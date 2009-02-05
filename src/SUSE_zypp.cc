@@ -23,13 +23,27 @@ namespace cmpizypp
     int initonce = _initonce();
 
 
-    const Pathname sysRoot( getenv("CMPIZYPP_ROOT") ? getenv("CMPIZYPP_ROOT") : "/" );
     bool zyppACInitialized = false;
 
-    void zyppACInit()
-    {
+
+  } // namespace
+
+
+  ZyppAC::ZyppAC()
+  {
+    zyppACInit();
+  }
+
+  ZyppAC::~ZyppAC()
+  {
+  }
+
+  void ZyppAC::zyppACInit()
+  {
       if ( zyppACInitialized )
         return;
+
+      sysRoot = Pathname( getenv("CMPIZYPP_ROOT") ? getenv("CMPIZYPP_ROOT") : "/" );
 
       KeyRing::setDefaultAccept( KeyRing::ACCEPT_UNKNOWNKEY|KeyRing::TRUST_KEY_TEMPORARILY );
 
@@ -89,18 +103,6 @@ namespace cmpizypp
       USR << "pool: " << pool << endl;
 
       zyppACInitialized = true;
-    }
-
-  } // namespace
-
-
-  ZyppAC::ZyppAC()
-  {
-    zyppACInit();
-  }
-
-  ZyppAC::~ZyppAC()
-  {
   }
 
   std::string ZyppAC::exceptionString( const Exception & err_r, const std::string & prefix_r )
