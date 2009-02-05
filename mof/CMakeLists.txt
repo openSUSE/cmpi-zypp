@@ -20,6 +20,8 @@ INSTALL( FILES
         SUSE_ElementCapabilities.sfcb.reg
         SUSE_HostedInstallationService.mof
         SUSE_HostedInstallationService.sfcb.reg
+	SUSE_SoftwareRepository.mof
+	SUSE_SoftwareRepository.sfcb.reg
 	deploy.mof
 	DESTINATION ${CMPIZYPP_DATA_DIR}/
 	)

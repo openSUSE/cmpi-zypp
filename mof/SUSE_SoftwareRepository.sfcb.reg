@@ -1,0 +1,5 @@
+[SUSE_SoftwareRepository]
+  provider: SUSE_SoftwareRepositoryProvider
+  location: cmpi-zypp
+  type: instance method
+  namespace: root/cimv2
