@@ -20,6 +20,7 @@ SET( CMPIZYPP_SRCS
   SUSE_ElementCapabilitiesProvider.cc
   SUSE_HostedInstallationServiceProvider.cc
   SUSE_SoftwareRepositoryProvider.cc
+  SUSE_HostedRepositoryProvider.cc
 )
 SET( CMPIZYPP_HEADERS
   SUSE_Common.h
@@ -36,6 +37,7 @@ SET( CMPIZYPP_HEADERS
   SUSE_ElementCapabilitiesProvider.h
   SUSE_HostedInstallationServiceProvider.h
   SUSE_SoftwareRepositoryProvider.h
+  SUSE_HostedRepositoryProvider.h
 )
 
 ADD_LIBRARY(cmpi-zypp SHARED ${CMPIZYPP_SRCS})

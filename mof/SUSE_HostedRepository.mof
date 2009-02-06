@@ -1,0 +1,33 @@
+//#pragma namespace ("root/cimv2")
+
+
+// -------------------------------------------------------------------
+// *******************************************************************
+//      Classes
+// *******************************************************************
+// -------------------------------------------------------------------
+
+
+
+// ===================================================================
+//      SUSE_HostedRepository
+// ===================================================================
+
+[ Provider("cmpi:cmpi-zypp"),
+  Description ("Association between System and SoftwareRepository")
+]
+class SUSE_HostedRepository : CIM_HostedAccessPoint
+{
+      [Override ( "Antecedent" ),
+       Min ( 1 ),
+       Max ( 1 ),
+       Description ( "The scoping system." )]
+   CIM_ComputerSystem REF Antecedent;
+
+      [Override ( "Dependent" ),
+       Description (
+          "The repository defined in the context of a system." )]
+   SUSE_SoftwareRepository REF Dependent;
+};
+
+
