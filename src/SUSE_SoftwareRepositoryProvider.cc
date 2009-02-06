@@ -10,6 +10,7 @@
 
 #include <zypp/base/String.h>
 #include <zypp/base/LogTools.h>
+#include <zypp/repo/RepoType.h>
 
 #include "SUSE_zypp.h"
 #include "SUSE_Common.h"
@@ -156,6 +157,217 @@ CmpiStatus SUSE_SoftwareRepositoryProviderClass::getInstance( const CmpiContext 
   return CmpiStatus(CMPI_RC_OK);
 }
 
+CmpiStatus SUSE_SoftwareRepositoryProviderClass::setInstance (const CmpiContext &ctx, CmpiResult &rslt,
+                                                              const CmpiObjectPath &cop, const CmpiInstance &inst,
+                                                              const char **properties)
+{
+  _CMPIZYPP_TRACE(1,("--- %s CMPI setInstance() called.", _ClassName));
+
+  CmpiInstance orig( broker->getInstance(ctx, cop, NULL ) );
+
+  const char *oldsccn = orig.getProperty("SystemCreationClassName");
+  const char *oldsn   = orig.getProperty("SystemName");
+  const char *oldccn  = orig.getProperty("CreationClassName");
+  const char *oldn    = orig.getProperty("Name");
+
+  const char *newsccn = inst.getProperty("SystemCreationClassName");
+  const char *newsn   = inst.getProperty("SystemName");
+  const char *newccn  = inst.getProperty("CreationClassName");
+  const char *newn    = inst.getProperty("Name");
+
+  if( newsccn== NULL || newsn == NULL || newccn == NULL || newn == NULL ||
+      oldsccn== NULL || oldsn == NULL || oldccn == NULL || oldn == NULL ||
+      ::strcmp(newccn, oldccn) != 0 ||
+      ::strcmp(newsccn, oldsccn) != 0 || ::strcmp(newsn, oldsn) != 0)
+  {
+    CmpiStatus rc( CMPI_RC_ERR_FAILED, "Invalid Instance." );
+    _CMPIZYPP_TRACE(1,("--- %s CMPI setInstance() failed : %s", _ClassName, rc.msg()));
+    return rc;
+  }
+  if( ::strcmp(newn, oldn) != 0 )
+  {
+    CmpiStatus rc( CMPI_RC_ERR_FAILED, "Name cannot be changed." );
+    _CMPIZYPP_TRACE(1,("--- %s CMPI setInstance() failed : %s", _ClassName, rc.msg()));
+    return rc;
+  }
+
+  // zypp init
+  zypp::scoped_ptr<ZyppAC> zyppac;
+  try
+  {
+    zyppac.reset( new ZyppAC() );
+  }
+  catch ( const zypp::Exception & err )
+  {
+    CmpiStatus rc( CMPI_RC_ERR_FAILED, ZyppAC::exceptionString( err, "Could not initialize libzypp: " ).c_str() );
+    _CMPIZYPP_TRACE(1,("--- %s CMPI setInstance() failed : %s", _ClassName, rc.msg()));
+    return rc;
+  }
+
+  RepoManager repoManager( zyppac->getSysRoot() );
+  // Check, if repo exists
+  if( ! repoManager.hasRepo( newn ) )
+  {
+    CmpiStatus rc( CMPI_RC_ERR_FAILED, "Instance do not exist." );
+    _CMPIZYPP_TRACE(1,("--- %s CMPI setInstance() failed : %s", _ClassName, rc.msg()));
+    return rc;
+  }
+
+  RepoInfo repoinfo( repoManager.getRepo( newn ) );
+  setRepoInfo( repoinfo, inst );
+
+  try
+  {
+    repoManager.modifyRepository( repoinfo );
+  }
+  catch( const zypp::Exception & err )
+  {
+    CmpiStatus rc( CMPI_RC_ERR_FAILED, ZyppAC::exceptionString( err, "Building repository info data failed: " ).c_str() );
+    _CMPIZYPP_TRACE(1,("--- %s CMPI setInstance() failed : %s", _ClassName, rc.msg()));
+    return rc;
+  }
+
+  CmpiInstance newci( broker->getInstance( ctx, cop, NULL ) );
+
+  _CMPIZYPP_TRACE(1,("--- %s CMPI setInstance() exited.", _ClassName));
+  return CmpiStatus(CMPI_RC_OK);
+}
+
+CmpiStatus SUSE_SoftwareRepositoryProviderClass::deleteInstance (const CmpiContext &ctx, CmpiResult &rslt,
+                                                                 const CmpiObjectPath &cop)
+{
+  _CMPIZYPP_TRACE(1,("--- %s CMPI deleteInstance() called.", _ClassName));
+
+  CmpiObjectPath csop = get_this_computersystem(*broker, ctx, cop);
+  const char *sccn = csop.getKey("CreationClassName");
+  const char *sn   = csop.getKey("Name");
+
+  const char *newsccn = cop.getKey("SystemCreationClassName");
+  const char *newsn   = cop.getKey("SystemName");
+  const char *newccn  = cop.getKey("CreationClassName");
+  const char *newn    = cop.getKey("Name");
+
+  if( newsccn== NULL || newsn == NULL || newccn == NULL || newn == NULL ||
+      ::strcmp(newccn, _ClassName) != 0 ||
+      ::strcmp(newsccn, sccn) != 0 || ::strcmp(newsn, sn) != 0)
+  {
+    CmpiStatus rc( CMPI_RC_ERR_FAILED, "Invalid Instance." );
+    _CMPIZYPP_TRACE(1,("--- %s CMPI deleteInstance() failed : %s", _ClassName, rc.msg()));
+    return rc;
+  }
+
+  // zypp init
+  zypp::scoped_ptr<ZyppAC> zyppac;
+  try
+  {
+    zyppac.reset( new ZyppAC() );
+  }
+  catch ( const zypp::Exception & err )
+  {
+    CmpiStatus rc( CMPI_RC_ERR_FAILED, ZyppAC::exceptionString( err, "Could not initialize zypp: " ).c_str() );
+    _CMPIZYPP_TRACE(1,("--- %s CMPI deleteInstance() failed : %s", _ClassName, rc.msg()));
+    return rc;
+  }
+
+  RepoManager repoManager( zyppac->getSysRoot() );
+  // Check, if repo exists
+  if( ! repoManager.hasRepo( newn ) )
+  {
+    CmpiStatus rc( CMPI_RC_ERR_FAILED, "Instance does not exist." );
+    _CMPIZYPP_TRACE(1,("--- %s CMPI deleteInstance() failed : %s", _ClassName, rc.msg()));
+    return rc;
+  }
+
+  RepoInfo repoinfo( repoManager.getRepo( newn ) );
+
+  try
+  {
+    repoManager.removeRepository( repoinfo );
+  }
+  catch( const zypp::Exception & err )
+  {
+    CmpiStatus rc( CMPI_RC_ERR_FAILED, ZyppAC::exceptionString( err, "Removing repository failed: " ).c_str() );
+    _CMPIZYPP_TRACE(1,("--- %s CMPI deleteInstance() failed : %s", _ClassName, rc.msg()));
+    return rc;
+  }
+
+  _CMPIZYPP_TRACE(1,("--- %s CMPI deleteInstance() exited.", _ClassName));
+  return CmpiStatus(CMPI_RC_OK);
+}
+
+CmpiStatus SUSE_SoftwareRepositoryProviderClass::createInstance (const CmpiContext &ctx, CmpiResult &rslt,
+                                                                 const CmpiObjectPath &cop, const CmpiInstance &inst)
+{
+  _CMPIZYPP_TRACE(1,("--- %s CMPI createInstance() called.", _ClassName));
+
+  CmpiObjectPath csop = get_this_computersystem(*broker, ctx, cop);
+  const char *sccn = csop.getKey("CreationClassName");
+  const char *sn   = csop.getKey("Name");
+
+  //const char *ns = cop.getNameSpace().charPtr();
+  CmpiObjectPath newcop = inst.getObjectPath();
+
+  const char *newsccn = newcop.getKey("SystemCreationClassName");
+  const char *newsn   = newcop.getKey("SystemName");
+  const char *newccn = newcop.getKey("CreationClassName");
+  const char *newn   = newcop.getKey("Name");
+
+  if( newsccn== NULL || newsn == NULL || newccn == NULL || newn == NULL ||
+      ::strcmp(newccn, _ClassName) != 0 ||
+      ::strcmp(newsccn, sccn) != 0 || ::strcmp(newsn, sn) != 0)
+  {
+    CmpiStatus rc( CMPI_RC_ERR_FAILED, "Invalid Instance." );
+    _CMPIZYPP_TRACE(1,("--- %s CMPI createInstance() failed : %s", _ClassName, rc.msg()));
+    return rc;
+  }
+
+  // zypp init
+  zypp::scoped_ptr<ZyppAC> zyppac;
+  try
+  {
+    zyppac.reset( new ZyppAC() );
+  }
+  catch ( const zypp::Exception & err )
+  {
+    CmpiStatus rc( CMPI_RC_ERR_FAILED, ZyppAC::exceptionString( err, "Could not list software identities: " ).c_str() );
+    _CMPIZYPP_TRACE(1,("--- %s CMPI createInstance() failed : %s", _ClassName, rc.msg()));
+    return rc;
+  }
+
+  RepoManager repoManager( zyppac->getSysRoot() );
+  // Check, if repo exists
+  if( repoManager.hasRepo( newn ) )
+  {
+    CmpiStatus rc( CMPI_RC_ERR_FAILED, "Instance already exists." );
+    _CMPIZYPP_TRACE(1,("--- %s CMPI createInstance() failed : %s", _ClassName, rc.msg()));
+    return rc;
+  }
+
+  RepoInfo repoinfo;
+  repoinfo.setAlias( newn );
+
+  setRepoInfo( repoinfo, inst );
+
+  try
+  {
+    repoManager.addRepository( repoinfo );
+  }
+  catch( const zypp::Exception & err )
+  {
+    CmpiStatus rc( CMPI_RC_ERR_FAILED, ZyppAC::exceptionString( err, "Building repository info data failed: " ).c_str() );
+    _CMPIZYPP_TRACE(1,("--- %s CMPI createInstance() failed : %s", _ClassName, rc.msg()));
+    return rc;
+  }
+
+  CmpiInstance newci( broker->getInstance( ctx, newcop, NULL ) );
+
+  rslt.returnData( newci.getObjectPath() );
+  rslt.returnDone();
+
+  _CMPIZYPP_TRACE(1,("--- %s CMPI createInstance() exited.", _ClassName));
+  return CmpiStatus(CMPI_RC_OK);
+}
+
 CmpiStatus SUSE_SoftwareRepositoryProviderClass::invokeMethod (const CmpiContext &ctx, CmpiResult &rslt,
                                                                const CmpiObjectPath &ref, const char *methodName,
                                                                const CmpiArgs &in, CmpiArgs &out)
@@ -291,7 +503,91 @@ CmpiInstance SUSE_SoftwareRepositoryProviderClass::makeInstance( const RepoInfo 
   ci.setProperty( "EnabledState", (repo.enabled())?CMPIUint16(2):CMPIUint16(3) );
   ci.setProperty( "ExtendedResourceType", CMPIUint16(2) );
 
+  ci.setProperty( "Autorefresh", (repo.autorefresh())?CmpiTrue:CmpiFalse );
+  ci.setProperty( "SignatureCheck", (repo.gpgCheck())?CmpiTrue:CmpiFalse );
+  ci.setProperty( "Priority", CMPIUint16(repo.priority()) );
+
+  switch( repo.type().toEnum() )
+  {
+  case repo::RepoType::RPMMD_e:
+    ci.setProperty( "RepositoryType", CMPIUint16(2) );
+    break;
+  case repo::RepoType::YAST2_e:
+    ci.setProperty( "RepositoryType", CMPIUint16(3) );
+    break;
+  case repo::RepoType::RPMPLAINDIR_e:
+    ci.setProperty( "RepositoryType", CMPIUint16(4) );
+    break;
+  case repo::RepoType::NONE_e:
+    ci.setProperty( "RepositoryType", CMPIUint16(0) );
+    break;
+  default:
+    ci.setProperty( "RepositoryType", CMPIUint16(1) );
+    break;
+  }
+
+
   return ci;
+}
+
+void SUSE_SoftwareRepositoryProviderClass::setRepoInfo( zypp::RepoInfo &repoinfo,
+                                                        const CmpiInstance &inst )
+{
+  const char* name = inst.getProperty("ElementName");
+  CMPIUint16 enabledState = inst.getProperty("EnabledState");
+  bool enabled = true ;
+  if( enabledState == 2)
+     enabled = true;
+  else if( enabledState == 3 )
+    enabled = false;
+  else
+  {
+    CmpiStatus rc( CMPI_RC_ERR_FAILED, "Invalid EnabledState value." );
+    _CMPIZYPP_TRACE(1,("--- %s CMPI createInstance() failed : %s", _ClassName, rc.msg()));
+    throw rc;
+  }
+
+  bool autorefresh = true;
+  unsigned char ar = inst.getProperty("Autorefresh");
+  if(  ar == 0 )
+    autorefresh = false;
+
+  CMPIUint16 priority = inst.getProperty("Priority");
+  bool gpgcheck = true;
+  unsigned char gc = inst.getProperty("SignatureCheck");
+  if( gc == 0 )
+    gpgcheck = false;
+
+  if( CMPIUint16(inst.getProperty("InfoFormat")) != CMPIUint16(200) )
+  {
+    CmpiStatus rc( CMPI_RC_ERR_FAILED, "Invalid InfoFormat value." );
+    _CMPIZYPP_TRACE(1,("--- %s CMPI createInstance() failed : %s", _ClassName, rc.msg()));
+    throw rc;
+  }
+
+  const char* url = inst.getProperty("AccessInfo");
+  if( url == NULL )
+  {
+    CmpiStatus rc( CMPI_RC_ERR_FAILED, "Invalid AccessValue value." );
+    _CMPIZYPP_TRACE(1,("--- %s CMPI createInstance() failed : %s", _ClassName, rc.msg()));
+    throw rc;
+  }
+
+  try
+  {
+    repoinfo.setName( name );
+    repoinfo.setEnabled( enabled );
+    repoinfo.setAutorefresh( autorefresh );
+    repoinfo.setPriority( priority );
+    repoinfo.setGpgCheck( gpgcheck );
+    repoinfo.setBaseUrl( Url( url ) );
+  }
+  catch( const zypp::Exception & err )
+  {
+    CmpiStatus rc( CMPI_RC_ERR_FAILED, ZyppAC::exceptionString( err, "Building repository info data failed: " ).c_str() );
+    _CMPIZYPP_TRACE(1,("--- %s CMPI createInstance() failed : %s", _ClassName, rc.msg()));
+    throw rc;
+  }
 }
 
 } // namespace cmpizypp

@@ -1,64 +1,86 @@
 // ==================================================================
 //  SUSE_SoftwareRepository
 // ==================================================================
-   [Experimental, Version ( "2.10.0" ), 
-    Description ( 
+   [Experimental, Version ( "2.10.0" ),
+    Description (
        "SoftwareRepository describes the URL of a repository "
        "containing SoftwareIdentities "
        "for use by the SoftwareInstallationService. " )]
 class SUSE_SoftwareRepository : CIM_RemoteServiceAccessPoint {
 
-      [Override ( "InfoFormat" ), 
-       Description ( 
+      [Override ( "InfoFormat" ),
+       Description (
           "A SoftwareRepository will always be a URL." )]
    uint16 InfoFormat = 200;
 
-      [Description ( 
+      [Description (
           "An enumerated integer that specifies the type of "
           "resource referenced by the "
-          "RemoteServiceAccessPoint.AccessInfo property." ), 
-       ValueMap { "0", "1", "2", "3", "4", "5", "6", "7", "9", "10", 
-          "11", "12", "..", "0x8000..0xFFFF" }, 
-       Values { "Unknown", "Other", "Installer and Payload", 
-          "Installer", "Payload", "Installability checker", 
-          "Security Advisory", "Engineering Advisory", 
-          "Technical release notes", "Change notification", 
-          "Whitepaper", "Marketing Documentation", "DMTF Reserved", 
-          "Vendor Reserved" }, 
-       ModelCorrespondence { 
-          "CIM_SoftwareIdentityResource.OtherResourceType", 
+          "RemoteServiceAccessPoint.AccessInfo property." ),
+       ValueMap { "0", "1", "2", "3", "4", "5", "6", "7", "9", "10",
+          "11", "12", "..", "0x8000..0xFFFF" },
+       Values { "Unknown", "Other", "Installer and Payload",
+          "Installer", "Payload", "Installability checker",
+          "Security Advisory", "Engineering Advisory",
+          "Technical release notes", "Change notification",
+          "Whitepaper", "Marketing Documentation", "DMTF Reserved",
+          "Vendor Reserved" },
+       ModelCorrespondence {
+          "CIM_SoftwareIdentityResource.OtherResourceType",
           "CIM_SoftwareIdentityResource.ExtendedResourceType" }]
    uint16 ResourceType = 1;
 
-      [Description ( 
+      [Description (
           "A enumerated integer that provides further information "
           "for ResourceType. It will set to 2 (\'Not Applicable\') "
-          "if there is no extended information available." ), 
-       ValueMap { "0", "2", // Binary format types 
-          "3", 
-          "4", "5", "6", "7", "8", "9..100", "101..200", 
-          //Text formats 
-          "201", "202", "203", 
-          "204..0x7FFF", "0x8000..0xFFFF" }, 
-       Values { "Unknown", "Not Applicable", 
-          // Binary format types 
-          "Linux RPM", 
-          "HP-UX Depot", "Windows MSI", "Solaris Package", 
-          "Macintosh Disk Image", "Debian linux Package", 
-          "DMTF Reserved", "Vendor Reserved", 
-          //Text formats 
-          "HTML", "PDF", "Text File", 
-          "DMTF Reserved", "Vendor Reserved" }, 
-       ModelCorrespondence { 
+          "if there is no extended information available." ),
+       ValueMap { "0", "2", // Binary format types
+          "3",
+          "4", "5", "6", "7", "8", "9..100", "101..200",
+          //Text formats
+          "201", "202", "203",
+          "204..0x7FFF", "0x8000..0xFFFF" },
+       Values { "Unknown", "Not Applicable",
+          // Binary format types
+          "Linux RPM",
+          "HP-UX Depot", "Windows MSI", "Solaris Package",
+          "Macintosh Disk Image", "Debian linux Package",
+          "DMTF Reserved", "Vendor Reserved",
+          //Text formats
+          "HTML", "PDF", "Text File",
+          "DMTF Reserved", "Vendor Reserved" },
+       ModelCorrespondence {
           "CIM_SoftwareIdentityResource.ResourceType" }]
    uint16 ExtendedResourceType;
 
-      [Description ( 
+      [Description (
           "A string describing the file type when the instance\'s "
-          "ResourceType property is 1 (\"Other\")." ), 
-       ModelCorrespondence { 
+          "ResourceType property is 1 (\"Other\")." ),
+       ModelCorrespondence {
           "CIM_SoftwareIdentityResource.ResourceType" }]
    string OtherResourceType = "Software Repository";
 
+      [Description (
+          "A boolean which say, if this repository should be "
+          "automatically refreshed or not." )]
+   boolean Autorefresh;
+
+      [Description (
+          " A boolean which say, if the sgignature check of "
+          " this repository should be enabled or not.")]
+   boolean SignatureCheck = true;
+
+      [Description (
+          " Define the priority of the repository. "
+          " Some number. 1 (highest priority), "
+          " 99 is the defaultPriority." )]
+   uint16 Priority = 99;
+
+      [Description (
+          " The type of this repository. " ),
+       ValueMap { "0", "1", "2", "3", "4", ".." },
+       Values { "Unknown", "Other", "rpm-md", "susetags", "rpmplaindir", "Vendor Reserved" }
+      ]
+   uint16 RepositoryType;
 
 };
