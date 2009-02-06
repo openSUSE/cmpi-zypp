@@ -31,6 +31,13 @@ namespace cmpizypp
                                  const CmpiObjectPath &csop, const char ** properties );
 
       void setRepoInfo( zypp::RepoInfo &repoinfo, const CmpiInstance &inst );
+
+      CmpiStatus requestStateChange(const CmpiContext &ctx, CmpiResult &rslt,
+                                    const CmpiObjectPath &ref,
+                                    const CmpiArgs &in, CmpiArgs &out);
+      CmpiStatus refresh(const CmpiContext &ctx, CmpiResult &rslt, const CmpiObjectPath &ref,
+                         const CmpiArgs &in, CmpiArgs &out);
+
   };
 
 } // namespace cmpizypp

@@ -382,86 +382,11 @@ CmpiStatus SUSE_SoftwareRepositoryProviderClass::invokeMethod (const CmpiContext
 
   if( ::strcasecmp( methodName, "RequestStateChange" ) == 0)
   {
-    const char *lsccn = ref.getKey("SystemCreationClassName");
-    const char *lsn   = ref.getKey("SystemName");
-    const char *lccn  = ref.getKey("CreationClassName");
-    const char *ln    = ref.getKey("Name");
-
-    CmpiObjectPath csop = get_this_computersystem(*broker, ctx, ref);
-    const char *sccn = csop.getKey("CreationClassName");
-    const char *sn   = csop.getKey("Name");
-
-    if( lsccn== NULL || lsn == NULL || lccn == NULL || ln == NULL ||
-        ::strcmp(lccn, _ClassName) != 0 ||
-        ::strcmp(lsccn, sccn) != 0 || ::strcmp(lsn, sn) != 0)
-    {
-      CmpiStatus rc( CMPI_RC_ERR_FAILED, "Could not find this instance." );
-      _CMPIZYPP_TRACE(1,("--- %s CMPI GetInstance() failed : %s", _ClassName, rc.msg()));
-      return rc;
-    }
-
-    CMPIUint16 reqState = 0;
-    try
-    {
-      reqState = in.getArg("RequestedState");
-    }
-    catch(CmpiStatus rc)
-    {
-      CmpiStatus rc( CMPI_RC_ERR_FAILED, "Missing parameter RequestedState." );
-      _CMPIZYPP_TRACE(1,("--- %s CMPI GetInstance() failed : %s", _ClassName, rc.msg()));
-      return rc;
-    }
-    // zypp init
-    zypp::scoped_ptr<ZyppAC> zyppac;
-    try
-    {
-      zyppac.reset( new ZyppAC() );
-    }
-    catch ( const zypp::Exception & err )
-    {
-      CmpiStatus rc( CMPI_RC_ERR_FAILED, ZyppAC::exceptionString( err, "Could not list software identities: " ).c_str() );
-      _CMPIZYPP_TRACE(1,("--- %s CMPI EnumInstanceNames() failed : %s", _ClassName, rc.msg()));
-      return rc;
-    }
-    bool newStateEnabled = true;
-
-    if( reqState == 2 )
-      newStateEnabled = true;
-    else if( reqState == 3 )
-      newStateEnabled = false;
-    else
-    {
-      _CMPIZYPP_TRACE(1,("--- %s CMPI GetInstance() failed : Invalid Parameter.", _ClassName ));
-      rslt.returnData( CMPIUint32(5) ); // invalid Parameter
-      rslt.returnDone();
-      return CmpiStatus ( CMPI_RC_OK );
-    }
-
-    RepoManager repoManager( zyppac->getSysRoot() );
-    if( ! repoManager.hasRepo( ln ) )
-    {
-      _CMPIZYPP_TRACE(1,("--- %s CMPI GetInstance() failed : Could not find this instance.", _ClassName ));
-      rslt.returnData( CMPIUint32(2) ); // unknown Error
-      rslt.returnDone();
-      return CmpiStatus ( CMPI_RC_OK );
-    }
-    try
-    {
-      RepoInfo repo( repoManager.getRepo( ln ) );
-      repo.setEnabled( newStateEnabled );
-      repoManager.modifyRepository( repo );
-    }
-    catch( const zypp::Exception & err )
-    {
-      _CMPIZYPP_TRACE(1,("--- %s CMPI InvokeMethod() failed : %s ", _ClassName,
-                                                                    ZyppAC::exceptionString( err, "" ).c_str() ));
-      rslt.returnData( CMPIUint32(2) ); // unknown Error
-      rslt.returnDone();
-      return CmpiStatus ( CMPI_RC_OK );
-    }
-    rslt.returnData( CmpiData(CMPIUint32(0)) ); // Completed with No Error
-    rslt.returnDone();
-    return CmpiStatus ( CMPI_RC_OK );
+    st = requestStateChange(ctx, rslt, ref, in, out);
+  }
+  else if( ::strcasecmp( methodName, "Refresh" ) == 0)
+  {
+    st = refresh(ctx, rslt, ref, in, out);
   }
 
   _CMPIZYPP_TRACE(1,("--- %s CMPI invokeMethod() exited",_ClassName));
@@ -588,6 +513,192 @@ void SUSE_SoftwareRepositoryProviderClass::setRepoInfo( zypp::RepoInfo &repoinfo
     _CMPIZYPP_TRACE(1,("--- %s CMPI createInstance() failed : %s", _ClassName, rc.msg()));
     throw rc;
   }
+}
+
+CmpiStatus SUSE_SoftwareRepositoryProviderClass::requestStateChange(const CmpiContext &ctx, CmpiResult &rslt,
+                                                                    const CmpiObjectPath &ref,
+                                                                    const CmpiArgs &in, CmpiArgs &out)
+{
+    const char *lsccn = ref.getKey("SystemCreationClassName");
+    const char *lsn   = ref.getKey("SystemName");
+    const char *lccn  = ref.getKey("CreationClassName");
+    const char *ln    = ref.getKey("Name");
+
+    CmpiObjectPath csop = get_this_computersystem(*broker, ctx, ref);
+    const char *sccn = csop.getKey("CreationClassName");
+    const char *sn   = csop.getKey("Name");
+
+    if( lsccn== NULL || lsn == NULL || lccn == NULL || ln == NULL ||
+        ::strcmp(lccn, _ClassName) != 0 ||
+        ::strcmp(lsccn, sccn) != 0 || ::strcmp(lsn, sn) != 0)
+    {
+      CmpiStatus rc( CMPI_RC_ERR_FAILED, "Could not find this instance." );
+      _CMPIZYPP_TRACE(1,("--- %s CMPI GetInstance() failed : %s", _ClassName, rc.msg()));
+      return rc;
+    }
+
+    CMPIUint16 reqState = 0;
+    try
+    {
+      reqState = in.getArg("RequestedState");
+    }
+    catch(CmpiStatus rc)
+    {
+      CmpiStatus rc( CMPI_RC_ERR_FAILED, "Missing parameter RequestedState." );
+      _CMPIZYPP_TRACE(1,("--- %s CMPI GetInstance() failed : %s", _ClassName, rc.msg()));
+      return rc;
+    }
+    // zypp init
+    zypp::scoped_ptr<ZyppAC> zyppac;
+    try
+    {
+      zyppac.reset( new ZyppAC() );
+    }
+    catch ( const zypp::Exception & err )
+    {
+      CmpiStatus rc( CMPI_RC_ERR_FAILED, ZyppAC::exceptionString( err, "Could not list software identities: " ).c_str() );
+      _CMPIZYPP_TRACE(1,("--- %s CMPI EnumInstanceNames() failed : %s", _ClassName, rc.msg()));
+      return rc;
+    }
+    bool newStateEnabled = true;
+
+    if( reqState == 2 )
+      newStateEnabled = true;
+    else if( reqState == 3 )
+      newStateEnabled = false;
+    else
+    {
+      _CMPIZYPP_TRACE(1,("--- %s CMPI GetInstance() failed : Invalid Parameter.", _ClassName ));
+      rslt.returnData( CMPIUint32(5) ); // invalid Parameter
+      rslt.returnDone();
+      return CmpiStatus ( CMPI_RC_OK );
+    }
+
+    RepoManager repoManager( zyppac->getSysRoot() );
+    if( ! repoManager.hasRepo( ln ) )
+    {
+      _CMPIZYPP_TRACE(1,("--- %s CMPI GetInstance() failed : Could not find this instance.", _ClassName ));
+      rslt.returnData( CMPIUint32(2) ); // unknown Error
+      rslt.returnDone();
+      return CmpiStatus ( CMPI_RC_OK );
+    }
+    try
+    {
+      RepoInfo repo( repoManager.getRepo( ln ) );
+      repo.setEnabled( newStateEnabled );
+      repoManager.modifyRepository( repo );
+    }
+    catch( const zypp::Exception & err )
+    {
+      _CMPIZYPP_TRACE(1,("--- %s CMPI InvokeMethod() failed : %s ", _ClassName,
+                                                                    ZyppAC::exceptionString( err, "" ).c_str() ));
+      rslt.returnData( CMPIUint32(2) ); // unknown Error
+      rslt.returnDone();
+      return CmpiStatus ( CMPI_RC_OK );
+    }
+    rslt.returnData( CmpiData(CMPIUint32(0)) ); // Completed with No Error
+    rslt.returnDone();
+    return CmpiStatus ( CMPI_RC_OK );
+}
+
+
+CmpiStatus SUSE_SoftwareRepositoryProviderClass::refresh(const CmpiContext &ctx, CmpiResult &rslt,
+                                                         const CmpiObjectPath &ref,
+                                                         const CmpiArgs &in, CmpiArgs &out)
+{
+    const char *lsccn = ref.getKey("SystemCreationClassName");
+    const char *lsn   = ref.getKey("SystemName");
+    const char *lccn  = ref.getKey("CreationClassName");
+    const char *ln    = ref.getKey("Name");
+
+    CmpiObjectPath csop = get_this_computersystem(*broker, ctx, ref);
+    const char *sccn = csop.getKey("CreationClassName");
+    const char *sn   = csop.getKey("Name");
+
+    if( lsccn== NULL || lsn == NULL || lccn == NULL || ln == NULL ||
+        ::strcmp(lccn, _ClassName) != 0 ||
+        ::strcmp(lsccn, sccn) != 0 || ::strcmp(lsn, sn) != 0)
+    {
+      CmpiStatus rc( CMPI_RC_ERR_FAILED, "Could not find this instance." );
+      _CMPIZYPP_TRACE(1,("--- %s CMPI InvokeMethod() failed : %s", _ClassName, rc.msg()));
+      return rc;
+    }
+
+    CMPIUint16 policy = 0;
+    try
+    {
+      policy = in.getArg("RefreshPolicy");
+    }
+    catch(CmpiStatus rc)
+    {
+      CmpiStatus rc( CMPI_RC_ERR_FAILED, "Missing parameter RefreshPolicy." );
+      _CMPIZYPP_TRACE(1,("--- %s CMPI InvokeMethod() failed : %s", _ClassName, rc.msg()));
+      return rc;
+    }
+    // zypp init
+    zypp::scoped_ptr<ZyppAC> zyppac;
+    try
+    {
+      zyppac.reset( new ZyppAC() );
+    }
+    catch ( const zypp::Exception & err )
+    {
+      CmpiStatus rc( CMPI_RC_ERR_FAILED, ZyppAC::exceptionString( err, "Could not initialize zypp: " ).c_str() );
+      _CMPIZYPP_TRACE(1,("--- %s CMPI InvokeMethod() failed : %s", _ClassName, rc.msg()));
+      return rc;
+    }
+    RepoManager::RawMetadataRefreshPolicy pol = RepoManager::RefreshIfNeeded;
+
+    switch( policy )
+    {
+      case 0:
+        pol = RepoManager::RefreshIfNeeded;
+        break;
+      case 1:
+        pol = RepoManager::RefreshForced;
+        break;
+      case 2:
+        pol = RepoManager::RefreshIfNeededIgnoreDelay;
+        break;
+    }
+
+    RepoManager repoManager( zyppac->getSysRoot() );
+    if( ! repoManager.hasRepo( ln ) )
+    {
+      _CMPIZYPP_TRACE(1,("--- %s CMPI InvokeMethod() failed : Could not find this instance.", _ClassName ));
+      rslt.returnData( CMPIUint32(1) ); // Error
+      rslt.returnDone();
+      return CmpiStatus ( CMPI_RC_OK );
+    }
+    try
+    {
+      RepoInfo repo( repoManager.getRepo( ln ) );
+
+      if( pol != RepoManager::RefreshForced && !repo.enabled() )
+      {
+        rslt.returnData( CmpiData(CMPIUint32(0)) ); // Completed with No Error
+        rslt.returnDone();
+        return CmpiStatus ( CMPI_RC_OK );
+      }
+      if ( repoManager.isCached( repo ) )
+      {
+        repoManager.cleanCache( repo );
+      }
+      repoManager.refreshMetadata( repo, pol );
+      repoManager.buildCache( repo );
+      repoManager.loadFromCache( repo );
+    }
+    catch( const zypp::Exception & err )
+    {
+      _CMPIZYPP_TRACE(1,("--- %s CMPI InvokeMethod() failed : %s ", _ClassName,
+                                                                    ZyppAC::exceptionString( err, "" ).c_str() ));
+      rslt.returnData( CMPIUint32(1) ); // Error
+      rslt.returnDone();
+      return CmpiStatus ( CMPI_RC_OK );
+    }
+    rslt.returnData( CmpiData(CMPIUint32(0)) ); // Completed with No Error
+    rslt.returnDone();
+    return CmpiStatus ( CMPI_RC_OK );
 }
 
 } // namespace cmpizypp
