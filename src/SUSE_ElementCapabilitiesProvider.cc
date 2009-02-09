@@ -41,9 +41,9 @@ namespace cmpizypp
   {
     _CMPIZYPP_TRACE(1,("--- %s CMPI EnumInstanceNames() called",_ClassName));
 
-    bool ret = assoc_create_refs_1toN( *broker, ctx, rslt, cop,
+    bool ret = assoc_create_inst_1toN( *broker, ctx, rslt, cop,
                                        _ClassName,_RefLeft,_RefRight,
-                                       _RefLeftClass,_RefRightClass,0,0);
+                                       _RefLeftClass,_RefRightClass,1,0);
     if(!ret)
     {
       CmpiStatus st( CMPI_RC_ERR_FAILED, "EnumInstanceNames failed." );
@@ -59,9 +59,9 @@ namespace cmpizypp
   {
     _CMPIZYPP_TRACE(1,("--- %s CMPI EnumInstances() called",_ClassName));
 
-    bool ret = assoc_create_refs_1toN( *broker, ctx, rslt, cop,
+    bool ret = assoc_create_inst_1toN( *broker, ctx, rslt, cop,
                                        _ClassName,_RefLeft,_RefRight,
-                                       _RefLeftClass,_RefRightClass,1,0);
+                                       _RefLeftClass,_RefRightClass,1,1);
     if(!ret)
     {
       CmpiStatus st( CMPI_RC_ERR_FAILED, "EnumInstances failed." );
