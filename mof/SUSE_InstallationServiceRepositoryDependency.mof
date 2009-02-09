@@ -1,0 +1,31 @@
+//#pragma namespace ("root/cimv2")
+
+
+// -------------------------------------------------------------------
+// *******************************************************************
+//      Classes
+// *******************************************************************
+// -------------------------------------------------------------------
+
+
+
+// ===================================================================
+//      SUSE_InstallationServiceRepositoryDependency
+// ===================================================================
+
+[ Provider("cmpi:cmpi-zypp"),
+  Description ("Association between the InstallationService and a SoftwareRepository")
+]
+class SUSE_InstallationServiceRepositoryDependency : CIM_ServiceSAPDependency
+{
+      [Override ( "Antecedent" ),
+       Description ( "The Repository." )]
+   SUSE_SoftwareRepository REF Antecedent;
+
+      [Override ( "Dependent" ),
+       Description (
+          "The InstallationService that is dependent on an underlying SAP." )]
+   SUSE_SoftwareInstallationService REF Dependent;
+};
+
+

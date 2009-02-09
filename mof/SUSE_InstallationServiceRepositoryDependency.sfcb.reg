@@ -1,0 +1,5 @@
+[SUSE_InstallationServiceRepositoryDependency]
+  provider: SUSE_InstallationServiceRepositoryDependencyProvider
+  location: cmpi-zypp
+  type: instance association
+  namespace: root/cimv2

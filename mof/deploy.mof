@@ -11,4 +11,4 @@
 #pragma include ("SUSE_HostedInstallationService.mof")
 #pragma include ("SUSE_SoftwareRepository.mof")
 #pragma include ("SUSE_HostedRepository.mof")
-
+#pragma include ("SUSE_InstallationServiceRepositoryDependency.mof")
