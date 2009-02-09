@@ -24,6 +24,8 @@ namespace cmpizypp
     private:
       CmpiStatus installFromSoftwareIdentity(const CmpiContext &ctx, CmpiResult &rslt,
                                              const CmpiObjectPath &ref, const CmpiArgs &in, CmpiArgs &out);
+      CmpiStatus refreshAllRepositories(const CmpiContext &ctx, CmpiResult &rslt,
+                                        const CmpiObjectPath &ref, const CmpiArgs &in, CmpiArgs &out);
   };
 
 } // namespace cmpizypp

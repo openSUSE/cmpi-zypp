@@ -17,7 +17,17 @@
   Description ("A Class which provide a SoftwareInstallationService.")
 ]
 class SUSE_SoftwareInstallationService : CIM_SoftwareInstallationService
-{ 
+{
+      [Description (
+          "Refresh all enabled repositories and load the new metadata into the pool."),
+       ValueMap { "0", "1", ".." },
+       Values { "Completed with no Errors", "Error", "Vendor Specific" }]
+   uint32 RefreshAllRepositories(
+          [IN, Description (
+              "Refresh Policy"),
+           ValueMap { "0", "1", "2" },
+           Values { "RefreshIfNeeded", "RefreshForced", "RefreshIfNeededIgnoreDelay" }]
+       uint16 RefreshPolicy);
 };
 
 

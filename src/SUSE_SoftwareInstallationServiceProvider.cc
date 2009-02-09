@@ -137,7 +137,10 @@ CmpiStatus SUSE_SoftwareInstallationServiceProviderClass::invokeMethod (const Cm
   {
     st = this->installFromSoftwareIdentity(ctx, rslt, ref, in, out);
   }
-
+  else if( ::strcasecmp( methodName, "RefreshAllRepositories" ) == 0)
+  {
+    st = this->refreshAllRepositories(ctx, rslt, ref, in, out);
+  }
   _CMPIZYPP_TRACE(1,("--- %s CMPI invokeMethod() exited",_ClassName));
   return st;
 }
@@ -153,6 +156,88 @@ CmpiStatus SUSE_SoftwareInstallationServiceProviderClass::installFromSoftwareIde
 
 
   _CMPIZYPP_TRACE(1,("--- %s CMPI installFromSoftwareIdentity() exited.",_ClassName));
+  return st;
+}
+
+CmpiStatus SUSE_SoftwareInstallationServiceProviderClass::refreshAllRepositories(const CmpiContext &ctx, CmpiResult &rslt,
+                                                                                 const CmpiObjectPath &ref,
+                                                                                 const CmpiArgs &in, CmpiArgs &out)
+{
+  CmpiStatus st(CMPI_RC_ERR_NOT_SUPPORTED);
+  _CMPIZYPP_TRACE(1,("--- %s CMPI refreshAllRepositories() called.",_ClassName));
+
+  CMPIUint16 policy = 0;
+  try
+  {
+    policy = in.getArg("RefreshPolicy");
+  }
+  catch(CmpiStatus rc)
+  {
+    CmpiStatus rc( CMPI_RC_ERR_FAILED, "Missing parameter RefreshPolicy." );
+    _CMPIZYPP_TRACE(1,("--- %s CMPI refreshAllRepositories() failed : %s", _ClassName, rc.msg()));
+    return rc;
+  }
+  // zypp init
+  zypp::scoped_ptr<ZyppAC> zyppac;
+  try
+  {
+    zyppac.reset( new ZyppAC() );
+  }
+  catch ( const zypp::Exception & err )
+  {
+    CmpiStatus rc( CMPI_RC_ERR_FAILED, ZyppAC::exceptionString( err, "Could not initialize zypp: " ).c_str() );
+    _CMPIZYPP_TRACE(1,("--- %s CMPI refreshAllRepositories() failed : %s", _ClassName, rc.msg()));
+    return rc;
+  }
+  RepoManager::RawMetadataRefreshPolicy pol = RepoManager::RefreshIfNeeded;
+
+  switch( policy )
+  {
+    case 0:
+      pol = RepoManager::RefreshIfNeeded;
+      break;
+    case 1:
+      pol = RepoManager::RefreshForced;
+      break;
+    case 2:
+      pol = RepoManager::RefreshIfNeededIgnoreDelay;
+      break;
+  }
+  RepoManager repoManager( zyppac->getSysRoot() );
+
+  try
+  {
+    // Load all enabled repos in repos.d to pool.
+    RepoInfoList repos = repoManager.knownRepositories();
+    for ( RepoInfoList::iterator it = repos.begin(); it != repos.end(); ++it )
+    {
+
+      RepoInfo & repo( *it );
+
+      if ( ! repo.enabled() )
+        continue;
+
+      if ( repoManager.isCached( repo ) )
+      {
+        repoManager.cleanCache( repo );
+      }
+      repoManager.refreshMetadata( repo, pol );
+      repoManager.buildCache( repo );
+      repoManager.loadFromCache( repo );
+    }
+  }
+  catch( const zypp::Exception & err )
+  {
+    _CMPIZYPP_TRACE(1,("--- %s CMPI refreshAllRepositories() failed : %s ", _ClassName,
+                        ZyppAC::exceptionString( err, "" ).c_str() ));
+                        rslt.returnData( CMPIUint32(1) ); // Error
+                        rslt.returnDone();
+                        return CmpiStatus ( CMPI_RC_OK );
+  }
+  rslt.returnData( CmpiData(CMPIUint32(0)) ); // Completed with No Error
+  rslt.returnDone();
+  st =  CmpiStatus ( CMPI_RC_OK );
+  _CMPIZYPP_TRACE(1,("--- %s CMPI refreshAllRepositories() exited.",_ClassName));
   return st;
 }
 
