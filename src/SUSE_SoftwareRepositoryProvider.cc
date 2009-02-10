@@ -55,7 +55,7 @@ CmpiStatus SUSE_SoftwareRepositoryProviderClass::enumInstanceNames( const CmpiCo
     return rc;
   }
 
-  RepoManager repoManager( zyppac->getSysRoot() );
+  RepoManager repoManager( zyppac->repoManager() );
 
   RepoInfoList repos = repoManager.knownRepositories();
   for ( RepoInfoList::iterator it = repos.begin(); it != repos.end(); ++it )
@@ -92,7 +92,7 @@ CmpiStatus SUSE_SoftwareRepositoryProviderClass::enumInstances( const CmpiContex
     return rc;
   }
 
-  RepoManager repoManager( zyppac->getSysRoot() );
+  RepoManager repoManager( zyppac->repoManager() );
 
   RepoInfoList repos = repoManager.knownRepositories();
   for ( RepoInfoList::iterator it = repos.begin(); it != repos.end(); ++it )
@@ -141,7 +141,7 @@ CmpiStatus SUSE_SoftwareRepositoryProviderClass::getInstance( const CmpiContext 
     return rc;
   }
 
-  RepoManager repoManager( zyppac->getSysRoot() );
+  RepoManager repoManager( zyppac->repoManager() );
   if( ! repoManager.hasRepo( ln ) )
   {
     CmpiStatus rc( CMPI_RC_ERR_FAILED, "Could not find this instance." );
@@ -204,7 +204,7 @@ CmpiStatus SUSE_SoftwareRepositoryProviderClass::setInstance (const CmpiContext 
     return rc;
   }
 
-  RepoManager repoManager( zyppac->getSysRoot() );
+  RepoManager repoManager( zyppac->repoManager() );
   // Check, if repo exists
   if( ! repoManager.hasRepo( newn ) )
   {
@@ -269,7 +269,7 @@ CmpiStatus SUSE_SoftwareRepositoryProviderClass::deleteInstance (const CmpiConte
     return rc;
   }
 
-  RepoManager repoManager( zyppac->getSysRoot() );
+  RepoManager repoManager( zyppac->repoManager() );
   // Check, if repo exists
   if( ! repoManager.hasRepo( newn ) )
   {
@@ -334,7 +334,7 @@ CmpiStatus SUSE_SoftwareRepositoryProviderClass::createInstance (const CmpiConte
     return rc;
   }
 
-  RepoManager repoManager( zyppac->getSysRoot() );
+  RepoManager repoManager( zyppac->repoManager() );
   // Check, if repo exists
   if( repoManager.hasRepo( newn ) )
   {
@@ -574,7 +574,7 @@ CmpiStatus SUSE_SoftwareRepositoryProviderClass::requestStateChange(const CmpiCo
       return CmpiStatus ( CMPI_RC_OK );
     }
 
-    RepoManager repoManager( zyppac->getSysRoot() );
+    RepoManager repoManager( zyppac->repoManager() );
     if( ! repoManager.hasRepo( ln ) )
     {
       _CMPIZYPP_TRACE(1,("--- %s CMPI GetInstance() failed : Could not find this instance.", _ClassName ));
@@ -662,7 +662,7 @@ CmpiStatus SUSE_SoftwareRepositoryProviderClass::refresh(const CmpiContext &ctx,
         break;
     }
 
-    RepoManager repoManager( zyppac->getSysRoot() );
+    RepoManager repoManager( zyppac->repoManager() );
     if( ! repoManager.hasRepo( ln ) )
     {
       _CMPIZYPP_TRACE(1,("--- %s CMPI InvokeMethod() failed : Could not find this instance.", _ClassName ));

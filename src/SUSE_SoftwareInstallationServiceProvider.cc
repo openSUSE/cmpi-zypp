@@ -203,7 +203,7 @@ CmpiStatus SUSE_SoftwareInstallationServiceProviderClass::refreshAllRepositories
       pol = RepoManager::RefreshIfNeededIgnoreDelay;
       break;
   }
-  RepoManager repoManager( zyppac->getSysRoot() );
+  RepoManager repoManager( zyppac->repoManager() );
 
   try
   {
