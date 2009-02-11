@@ -26,9 +26,13 @@ namespace cmpizypp
                                        const CmpiObjectPath &ref, const char *methodName,
                                        const CmpiArgs &in, CmpiArgs &out);
 
+      static  CmpiObjectPath makeObjectPath(const zypp::RepoInfo &repo, const CmpiObjectPath &cop,
+                                            const CmpiObjectPath &csop);
+
+      static  CmpiInstance makeInstance( const zypp::RepoInfo &repo, const CmpiObjectPath &cop,
+                                         const CmpiObjectPath &csop, const char ** properties );
+
     private:
-      CmpiInstance makeInstance( const zypp::RepoInfo &repo, const CmpiObjectPath &cop,
-                                 const CmpiObjectPath &csop, const char ** properties );
 
       void setRepoInfo( zypp::RepoInfo &repoinfo, const CmpiInstance &inst );
 

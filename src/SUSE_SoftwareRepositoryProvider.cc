@@ -39,8 +39,6 @@ CmpiStatus SUSE_SoftwareRepositoryProviderClass::enumInstanceNames( const CmpiCo
   _CMPIZYPP_TRACE(1,("--- %s CMPI EnumInstanceNames() called",_ClassName));
 
   CmpiObjectPath csop = get_this_computersystem(*broker, ctx, cop);
-  const char *sccn = csop.getKey("CreationClassName");
-  const char *sn   = csop.getKey("Name");
 
   // zypp init
   zypp::scoped_ptr<ZyppAC> zyppac;
@@ -60,12 +58,7 @@ CmpiStatus SUSE_SoftwareRepositoryProviderClass::enumInstanceNames( const CmpiCo
   RepoInfoList repos = repoManager.knownRepositories();
   for ( RepoInfoList::iterator it = repos.begin(); it != repos.end(); ++it )
   {
-    CmpiObjectPath op( cop.getNameSpace(), _ClassName );
-    op.setKey( "SystemCreationClassName", sccn);
-    op.setKey( "SystemName", sn);
-    op.setKey( "CreationClassName", _ClassName);
-    op.setKey( "Name", it->alias().c_str() );
-    rslt.returnData( op );
+    rslt.returnData( makeObjectPath( *it, cop, csop ) );
   }
 
   rslt.returnDone();
@@ -393,7 +386,21 @@ CmpiStatus SUSE_SoftwareRepositoryProviderClass::invokeMethod (const CmpiContext
   return st;
 }
 
-/* ========================= private ================================== */
+CmpiObjectPath SUSE_SoftwareRepositoryProviderClass::makeObjectPath(const zypp::RepoInfo &repo, const CmpiObjectPath &cop,
+                                                                    const CmpiObjectPath &csop)
+{
+  const char *sccn = csop.getKey("CreationClassName");
+  const char *sn   = csop.getKey("Name");
+
+  CmpiObjectPath op( cop.getNameSpace(), _ClassName );
+  op.setKey( "SystemCreationClassName", sccn);
+  op.setKey( "SystemName", sn);
+  op.setKey( "CreationClassName", _ClassName);
+  op.setKey( "Name", repo.alias().c_str() );
+
+  return op;
+}
+
 
 CmpiInstance SUSE_SoftwareRepositoryProviderClass::makeInstance( const RepoInfo &repo,
                                                                  const CmpiObjectPath & cop,
@@ -450,10 +457,10 @@ CmpiInstance SUSE_SoftwareRepositoryProviderClass::makeInstance( const RepoInfo 
     ci.setProperty( "RepositoryType", CMPIUint16(1) );
     break;
   }
-
-
   return ci;
 }
+
+/* ========================= private ================================== */
 
 void SUSE_SoftwareRepositoryProviderClass::setRepoInfo( zypp::RepoInfo &repoinfo,
                                                         const CmpiInstance &inst )
