@@ -1,0 +1,32 @@
+//#pragma namespace ("root/cimv2")
+
+
+// -------------------------------------------------------------------
+// *******************************************************************
+//      Classes
+// *******************************************************************
+// -------------------------------------------------------------------
+
+
+
+// ===================================================================
+//      SUSE_RepositoryAvailableForSoftwareIdentity
+// ===================================================================
+
+[ Provider("cmpi:cmpi-zypp"),
+  Description ("Association between the SoftwareIdentity and a SoftwareRepository")
+]
+class SUSE_RepositoryAvailableForSoftwareIdentity : CIM_SAPAvailableForElement
+{
+
+      [Key, Description (
+          "The Repository that is available." )]
+   SUSE_SoftwareRepository REF AvailableSAP;
+
+      [Key, Description (
+          "The SoftwareIdentity which exist in the Repository." )]
+   SUSE_SoftwareIdentity REF ManagedElement;
+
+};
+
+

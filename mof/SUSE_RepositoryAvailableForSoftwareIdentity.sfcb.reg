@@ -1,0 +1,5 @@
+[SUSE_RepositoryAvailableForSoftwareIdentity]
+  provider: SUSE_RepositoryAvailableForSoftwareIdentityProvider
+  location: cmpi-zypp
+  type: instance association
+  namespace: root/cimv2

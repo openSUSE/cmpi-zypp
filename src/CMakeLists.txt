@@ -22,6 +22,7 @@ SET( CMPIZYPP_SRCS
   SUSE_SoftwareRepositoryProvider.cc
   SUSE_HostedRepositoryProvider.cc
   SUSE_InstallationServiceRepositoryDependencyProvider.cc
+  SUSE_RepositoryAvailableForSoftwareIdentityProvider.cc
 )
 SET( CMPIZYPP_HEADERS
   SUSE_Common.h
@@ -40,6 +41,7 @@ SET( CMPIZYPP_HEADERS
   SUSE_SoftwareRepositoryProvider.h
   SUSE_HostedRepositoryProvider.h
   SUSE_InstallationServiceRepositoryDependencyProvider.h
+  SUSE_RepositoryAvailableForSoftwareIdentityProvider.h
 )
 
 ADD_LIBRARY(cmpi-zypp SHARED ${CMPIZYPP_SRCS})
