@@ -1,10 +1,14 @@
 
 #include <iostream>
+#include <boost/thread.hpp>
 
 #include "zypp/base/LogControl.h"
 #include "zypp/base/LogTools.h"
 
 #include "SUSE_zypp.h"
+
+#undef  ZYPP_BASE_LOGGER_LOGGROUP
+#define ZYPP_BASE_LOGGER_LOGGROUP "zyppAC"
 
 using namespace zypp;
 using std::endl;
@@ -13,37 +17,13 @@ namespace cmpizypp
 {
   namespace
   {
-
-    int _initonce()
+    void zyppACInit()
     {
-      // use `export ZYPP_LOGFILE=/tmp/CMPIZYPP.log` to redirect the zypp log.
-      // zypp::base::LogControl::instance().logToStdErr();
-      return 0;
-    }
-    int initonce = _initonce();
-
-
-    bool zyppACInitialized = false;
-
-
-  } // namespace
-
-
-  ZyppAC::ZyppAC()
-  {
-    zyppACInit();
-  }
-
-  ZyppAC::~ZyppAC()
-  {
-  }
-
-  void ZyppAC::zyppACInit()
-  {
+      static bool zyppACInitialized = false;
       if ( zyppACInitialized )
         return;
 
-      sysRoot = Pathname( getenv("CMPIZYPP_ROOT") ? getenv("CMPIZYPP_ROOT") : "/" );
+      Pathname sysRoot( ZyppAC::getSysRoot() );
 
       KeyRing::setDefaultAccept( KeyRing::ACCEPT_UNKNOWNKEY|KeyRing::TRUST_KEY_TEMPORARILY );
 
@@ -99,10 +79,29 @@ namespace cmpizypp
 
       ResPool   pool( ResPool::instance() );
       sat::Pool satpool( sat::Pool::instance() );
-      dumpRange( USR, satpool.reposBegin(), satpool.reposEnd() );
+
+      dumpRange( USR << "Repos: ", satpool.reposBegin(), satpool.reposEnd() ) << endl;
       USR << "pool: " << pool << endl;
 
       zyppACInitialized = true;
+    }
+  } // namespace
+
+  zypp::Pathname ZyppAC::getSysRoot()
+  {
+    static zypp::Pathname _sysRoot( getenv("CMPIZYPP_ROOT") ? getenv("CMPIZYPP_ROOT") : "/" );
+    return _sysRoot;
+  }
+
+  ZyppAC::ZyppAC()
+  {
+    //INT << "+++Lock " << this << endl;
+    zyppACInit();
+  }
+
+  ZyppAC::~ZyppAC()
+  {
+    //MIL << "---Lock " << this << endl;
   }
 
   std::string ZyppAC::exceptionString( const Exception & err_r, const std::string & prefix_r )

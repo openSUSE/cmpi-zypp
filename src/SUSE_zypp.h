@@ -17,21 +17,17 @@ namespace cmpizypp
   /** Access to libzypp components. */
   class ZyppAC
   {
-    private:
-      zypp::Pathname sysRoot;
-
-      void zyppACInit();
-
     public:
       ZyppAC();
       ~ZyppAC();
 
-      zypp::Pathname     getSysRoot()  const { return sysRoot; }
+      static zypp::Pathname getSysRoot();
+
       zypp::Target &     target()      const { return *zypp::getZYpp()->getTarget(); }
+      zypp::RepoManager  repoManager() const { return zypp::RepoManager( getSysRoot() ); }
       zypp::ResPool      pool()        const { return zypp::ResPool::instance(); }
       zypp::ResPoolProxy poolProxy()   const { return pool().proxy(); }
       zypp::sat::Pool    satpool()     const { return zypp::sat::Pool::instance(); }
-      zypp::RepoManager  repoManager() const { return zypp::RepoManager( sysRoot ); }
 
       static std::string exceptionString( const zypp::Exception & err_r, const std::string & prefix = std::string() );
 
