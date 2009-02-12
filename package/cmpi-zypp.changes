@@ -1,4 +1,20 @@
 -------------------------------------------------------------------
+Wed Feb 11 17:46:46 CET 2009 - mc@suse.de
+
+- version 0.0.4
+- implement
+
+  * SUSE_SoftwareInstallationService
+  * SUSE_InstallationServiceAffectsSoftwareIdentity
+  * SUSE_SoftwareInstallationServiceCapabilities
+  * SUSE_ElementCapabilities
+  * SUSE_HostedInstallationService
+  * SUSE_SoftwareRepository
+  * SUSE_HostedRepository
+  * SUSE_InstallationServiceRepositoryDependency
+  * SUSE_RepositoryAvailableForSoftwareIdentity 
+
+-------------------------------------------------------------------
 Wed Jan 28 14:36:27 CET 2009 - ma@suse.de
 
 - version 0.0.3
