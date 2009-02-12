@@ -84,7 +84,7 @@ class SUSE_SoftwareRepository : CIM_RemoteServiceAccessPoint {
    uint16 RepositoryType;
 
       [Description (
-          "Refresh this repository and load the new metadata into the pool."),
+          "Refresh this repository and load the new metadata into the pool if it is enabled."),
        ValueMap { "0", "1", ".." },
        Values { "Completed with no Errors", "Error", "Vendor Specific" }]
    uint32 Refresh(

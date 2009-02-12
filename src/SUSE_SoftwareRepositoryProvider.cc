@@ -681,7 +681,7 @@ CmpiStatus SUSE_SoftwareRepositoryProviderClass::refresh(const CmpiContext &ctx,
     {
       RepoInfo repo( repoManager.getRepo( ln ) );
 
-      if( pol != RepoManager::RefreshForced && !repo.enabled() )
+      if( !repo.enabled() )
       {
         rslt.returnData( CmpiData(CMPIUint32(0)) ); // Completed with No Error
         rslt.returnDone();
