@@ -13,3 +13,4 @@
 #pragma include ("SUSE_HostedRepository.mof")
 #pragma include ("SUSE_InstallationServiceRepositoryDependency.mof")
 #pragma include ("SUSE_RepositoryAvailableForSoftwareIdentity.mof")
+#pragma include ("SUSE_SoftwareInstallationJob.mof")

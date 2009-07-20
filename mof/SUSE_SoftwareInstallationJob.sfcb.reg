@@ -1,0 +1,5 @@
+[SUSE_SoftwareInstallationJob]
+  provider: SUSE_SoftwareInstallationJobProvider
+  location: cmpi-zypp
+  type: instance method
+  namespace: root/cimv2
