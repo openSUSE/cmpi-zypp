@@ -98,6 +98,7 @@ MESSAGE(STATUS "version: ${VERSION}")
 ####################################################################
 
 ADD_SUBDIRECTORY( src )
+ADD_SUBDIRECTORY( helper )
 ADD_SUBDIRECTORY( doc )
 ADD_SUBDIRECTORY( mof )
 
