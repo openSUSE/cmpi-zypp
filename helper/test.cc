@@ -19,33 +19,36 @@ using namespace boost::interprocess;
 
 using std::endl;
 
-Comm & cmpizypp::getshmem()
+namespace cmpizypp
 {
-  static bool initialized = false;
-  if ( ! initialized )
+  Comm & getshmem()
   {
+    static bool initialized = false;
+    if ( ! initialized )
+    {
     // Create a shared memory object.
-    MIL << "Create shared_memory_object " << SHM_NAME << endl;
-  }
-  static ::mode_t mask = ::umask( 0077 );
-  static shared_memory_object shm ( create_only, SHM_NAME, read_write );
-  if ( ! initialized )
-  {
-    ::umask( mask );
+      MIL << "Create shared_memory_object " << SHM_NAME << endl;
+    }
+    static ::mode_t mask = ::umask( 0077 );
+    static shared_memory_object shm ( create_only, SHM_NAME, read_write );
+    if ( ! initialized )
+    {
+        ::umask( mask );
     // Set size
-    shm.truncate( 1000 );
-  }
+        shm.truncate( 1000 );
+    }
   // Map the whole shared memory in this process
-  static mapped_region region( shm, read_write );
-  if ( ! initialized )
-  {
+    static mapped_region region( shm, read_write );
+    if ( ! initialized )
+    {
     // Write all the memory to '0'
-    std::memset( region.get_address(), 0, region.get_size() );
+      std::memset( region.get_address(), 0, region.get_size() );
     // Initialize
-    new ( region.get_address() ) Comm;
-    initialized = true;
+      new ( region.get_address() ) Comm;
+      initialized = true;
+    }
+    return *static_cast<Comm *>(region.get_address());
   }
-  return *static_cast<Comm *>(region.get_address());
 }
 
 int main( int argc, char * argv[] )
@@ -75,7 +78,7 @@ try {
 
   pid_t p = 0;
   {
-    CommAccess c;
+    CommAccess c( getshmem() );
 
     // Launch child process
     p = fork();

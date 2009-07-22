@@ -36,13 +36,10 @@ namespace cmpizypp
     char      dataStr[STR_SIZE];
   };
 
-
-  extern Comm & getshmem();
-
   struct CommAccess : private boost::noncopyable
   {
-    CommAccess()
-      : _c( getshmem() )
+    CommAccess( Comm & c )
+      : _c( c )
     {
       if ( ! _c.lock.timed_wait( boost::posix_time::from_time_t( ::time(0)+5 ) ) )
       {

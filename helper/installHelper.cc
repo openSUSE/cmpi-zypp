@@ -14,14 +14,16 @@ using namespace boost::interprocess;
 using std::endl;
 
 
-Comm & cmpizypp::getshmem()
+namespace cmpizypp
 {
-  static shared_memory_object shm( open_only, SHM_NAME, read_write );
+  Comm & getshmem()
+  {
+    static shared_memory_object shm( open_only, SHM_NAME, read_write );
   //Map the whole shared memory in this process
-  static mapped_region region( shm, read_write );
-  return * static_cast<Comm*>(region.get_address());
+    static mapped_region region( shm, read_write );
+    return * static_cast<Comm*>(region.get_address());
+  }
 }
-
 
 int main( int argc, char * argv[] )
 try {
@@ -34,7 +36,7 @@ try {
   MIL << "Waiting for lock..." << endl;
   std::string iFile;
   {
-    CommAccess c;
+    CommAccess c( getshmem() );
     MIL << c->pid << endl;
     if ( c->pid != getpid() )
     {
