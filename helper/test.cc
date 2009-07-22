@@ -7,16 +7,19 @@
 #include <zypp/base/LogControl.h>
 #include <zypp/base/Exception.h>
 #include <zypp/base/String.h>
+#include <zypp/Pathname.h>
+#include <zypp/TmpPath.h>
 
 #include "installHelper.h"
 
 using namespace zypp;
+using namespace zypp::filesystem;
 using namespace cmpizypp;
 using namespace boost::interprocess;
 
 using std::endl;
 
-Comm & getshmem()
+Comm & cmpizypp::getshmem()
 {
   static bool initialized = false;
   if ( ! initialized )
@@ -65,7 +68,7 @@ try {
   } remover;
 
   // write task list
-  std::string path( TmpFile().path() );
+  std::string path( TmpFile().path().asString() );
   std::ofstream o( path.c_str() );
   o << "hi" << endl;
   o.close();

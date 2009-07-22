@@ -14,7 +14,7 @@ using namespace boost::interprocess;
 using std::endl;
 
 
-Comm & getshmem()
+Comm & cmpizypp::getshmem()
 {
   static shared_memory_object shm( open_only, SHM_NAME, read_write );
   //Map the whole shared memory in this process
