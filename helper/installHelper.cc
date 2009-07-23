@@ -16,12 +16,10 @@ using std::endl;
 
 namespace cmpizypp
 {
-  Comm & getshmem()
+  managed_shared_memory & shm()
   {
-    static shared_memory_object shm( open_only, SHM_NAME, read_write );
-  //Map the whole shared memory in this process
-    static mapped_region region( shm, read_write );
-    return * static_cast<Comm*>(region.get_address());
+    static managed_shared_memory managed_shm( open_only, SHM_NAME );
+    return managed_shm;
   }
 }
 
@@ -33,33 +31,26 @@ try {
 
   MIL << "InstallHelper " << getpid() << endl;
 
-  MIL << "Waiting for lock..." << endl;
   std::string iFile;
   {
-    CommAccess c( getshmem() );
-    MIL << c->pid << endl;
-    if ( c->pid != getpid() )
+    ShmAccess<Comm> comm( shm(), "Comm" );
+    MIL << comm->pid << endl;
+    if ( comm->pid != getpid() )
     {
-      ERR << "Not my pid: " << c->pid << "(" << getpid() << ")" << endl;
+      ERR << "Not my pid: " << comm->pid << "(" << getpid() << ")" << endl;
       return 1;
     }
 
-    if ( * c->dataStr )
-      iFile = c->dataStr;
+    if ( * comm->dataStr )
+      iFile = comm->dataStr;
   }
 
   MIL << "read " << iFile << endl;
   std::ifstream infile( iFile.c_str() );
   for( iostr::EachLine in( infile ); in; in.next() )
   {
-    DBG << *in << endl;
+    USR << *in << endl;
   }
-
-
-
-
-
-
 
   MIL << "Done" << endl;
 
@@ -69,8 +60,8 @@ try {
   return 0;
 }
 catch ( const Exception & exp )
-{
-  INT << exp << endl << exp.historyAsString();
-}
+{ INT << exp << endl << exp.historyAsString(); throw; }
+catch ( const std::string & exp )
+{ INT << "exception: " << exp << endl; throw; }
 catch (...)
-{ INT << "exception" << endl; }
+{ INT << "exception" << endl; throw; }
