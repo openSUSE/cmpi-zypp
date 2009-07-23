@@ -20,10 +20,12 @@ using namespace cmpizypp;
 
 using std::endl;
 
+/*
 void shmDebug()
 {
   ExternalProgram( "ls -l /dev/shm" ) >> MIL;
 }
+*/
 
 namespace cmpizypp
 {

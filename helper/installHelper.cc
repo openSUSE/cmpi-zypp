@@ -52,6 +52,22 @@ try {
     USR << *in << endl;
   }
 
+  for(int i = 0; i < 10; ++i)
+  {
+    ShmAccess<Comm> comm( shm(), "Comm" );
+
+    comm->percent = i*10;
+    comm->status  = 4;
+    sleep(1);
+  }
+
+  {
+    ShmAccess<Comm> comm( shm(), "Comm" );
+
+    comm->percent = 100;
+    comm->status  = 7;
+  }
+
   MIL << "Done" << endl;
 
   ///////////////////////////////////////////////////////////////////

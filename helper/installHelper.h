@@ -11,6 +11,12 @@
 #define STR_SIZE 256
 #define MAX_ANSWERS 10
 
+/*
+JobState
+Values {"New", "Starting", "Running", "Suspended", "Shutting Down", "Completed", "Terminated", "Killed", "Exception", "Service", "Query Pending", "DMTF Reserved", "Vendor Reserved"}
+ValueMap {"2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13..32767", "32768..65535"}
+*/
+
 namespace cmpizypp
 {
   /**

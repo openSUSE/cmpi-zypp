@@ -12,11 +12,13 @@
 #include <zypp/base/String.h>
 #include <zypp/base/LogTools.h>
 
+#include "installHelper.h"
 #include "SUSE_zypp.h"
 #include "SUSE_Common.h"
 #include "SUSE_SoftwareInstallationJobProvider.h"
 
 using namespace zypp;
+using namespace boost::interprocess;
 using std::endl;
 
 namespace cmpizypp
@@ -88,14 +90,42 @@ CmpiStatus SUSE_SoftwareInstallationJobProviderClass::getInstance( const CmpiCon
   CmpiObjectPath op( cop.getNameSpace(), _ClassName );
   CmpiInstance   ci( op );
 
+  const char* iid = cop.getKey("InstanceID");
+  std::string instanceid = iid;
+
+  if ( ! str::hasPrefix( instanceid, "SUSE:" ) )
+  {
+    return CmpiStatus(CMPI_RC_ERR_FAILED, "Invalid InstanceID");
+  }
+  std::string pid = instanceid.substr( instanceid.find( ":" )+1);
+
+  uint16_t  status = 0;
+  uint16_t  percent = 0;
+  uint16_t  error = 0;
+
+  {
+    managed_shared_memory managed_shm( open_only, SHM_NAME );
+    ShmAccess<Comm> comm( managed_shm, "Comm" );
+
+    if( pid != str::numstring(comm->pid) )
+    {
+      return CmpiStatus(CMPI_RC_ERR_FAILED, "Invalid InstanceID. No such process.");
+    }
+
+    status  = comm->status;
+    percent = comm->percent;
+    error   = comm->error;
+  }
+
   const char * keys[] = { "InstanceID" };
   ci.setPropertyFilter( properties, keys );
 
-  ci.setProperty( "InstanceID", "SUSE:__dummy__" );
+  ci.setProperty( "InstanceID", iid );
 
   ci.setProperty( "Name", "Zypp Software Installation Job");
-  ci.setProperty( "JobState", 4 ); //Running
-  ci.setProperty( "PercentComplete", 12);
+  ci.setProperty( "JobState", CMPIUint16(status) );
+  ci.setProperty( "PercentComplete", CMPIUint16(percent) );
+  ci.setProperty( "ErrorCode", CMPIUint16(error) );
   ci.setProperty( "TimeBeforeRemoval", CmpiDateTime() );
   /*
   ci.setProperty( "", "");
