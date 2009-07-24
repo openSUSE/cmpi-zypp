@@ -31,7 +31,6 @@ try {
 
   MIL << "InstallHelper " << getpid() << endl;
 
-  std::string iFile;
   {
     ShmAccess<Comm> comm( shm(), "Comm" );
     MIL << comm->pid << endl;
@@ -40,32 +39,32 @@ try {
       ERR << "Not my pid: " << comm->pid << "(" << getpid() << ")" << endl;
       return 1;
     }
-
-    if ( * comm->dataStr )
-      iFile = comm->dataStr;
+    comm->setStatus( JS_RUNNING );
   }
 
-  MIL << "read " << iFile << endl;
-  std::ifstream infile( iFile.c_str() );
-  for( iostr::EachLine in( infile ); in; in.next() )
-  {
-    USR << *in << endl;
-  }
+
+  MIL << "Prepare to receive data..." << endl;
+  ShmAccessUnlocked<TextExch> textExch( shm(), "TextExch" );
+  MIL << "Receive data..." << endl;
+  std::string rec;
+  do {
+    rec = textExch->get();
+    USR << rec << endl;
+  } while( ! rec.empty() );
+  MIL << "Received." << endl;
+
 
   for(int i = 0; i < 10; ++i)
   {
     ShmAccess<Comm> comm( shm(), "Comm" );
-
     comm->percent = i*10;
-    comm->status  = 4;
     sleep(1);
   }
 
   {
     ShmAccess<Comm> comm( shm(), "Comm" );
-
     comm->percent = 100;
-    comm->status  = 7;
+    comm->setStatus( JS_COMPLETED );
   }
 
   MIL << "Done" << endl;

@@ -11,6 +11,7 @@
 #include <zypp/Pathname.h>
 #include <zypp/TmpPath.h>
 
+#define HELPERDEBUG
 #include "installHelper.h"
 
 using namespace zypp;
@@ -54,26 +55,42 @@ try {
   {
     throw std::string( "Out of shmem constructing Comm" );
   }
-
-  // write task list
-  std::string path( TmpFile().path().asString() );
-  std::ofstream o( path.c_str() );
-  o << "hi" << endl;
-  o.close();
+  if ( ! shm().find_or_construct<TextExch>("TextExch")() )
+  {
+    throw std::string( "Out of shmem constructing TextExch" );
+  }
 
   ShmAccess<Comm> comm( shm(), "Comm" ); // blocks the helper
-
-  strncpy( comm->dataStr, path.c_str(), STR_SIZE );
-
+  USR << "STATUS: " << comm << endl;
   ExternalProgram helper( "./installHelper" );
   comm->pid = helper.getpid();
   comm.release(); // go...
+  USR << "STATUS: " << comm << endl;
+
+
+  MIL << "Prepare to send data..." << endl;
+  const char * args[] = {
+    "Das Reh huepft hoch",
+    "Das Reh huepft weit",
+    "Warum auch nicht",
+    "Es hat ja Zeit",
+  };
+  ShmAccessUnlocked<TextExch> textExch( shm(), "TextExch" );
+  MIL << "Send data..." << endl;
+  for_( it, arrayBegin( args ), arrayEnd( args ) )
+  {
+    textExch->send( *it );
+  }
+  textExch->send( 0 );
+  MIL << "Sent." << endl;
+
 
   while ( helper.running() )
   {
-    sleep( 5 );
-    MIL << "ping..." << endl;
+    USR << "STATUS: " << comm << endl;
+    sleep( 1 );
   }
+  USR << "FIN:    " << comm << endl;
 
   if ( helper.close() != 0 )
     ERR << helper.execError() << endl;
