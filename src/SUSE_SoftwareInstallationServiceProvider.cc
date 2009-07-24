@@ -145,6 +145,10 @@ CmpiStatus SUSE_SoftwareInstallationServiceProviderClass::invokeMethod (const Cm
   {
     st = this->installFromSoftwareIdentity(ctx, rslt, ref, in, out);
   }
+  else if( ::strcasecmp( methodName, "InstallFromSoftwareIdentities" ) == 0)
+  {
+    st = this->installFromSoftwareIdentities(ctx, rslt, ref, in, out);
+  }
   else if( ::strcasecmp( methodName, "RefreshAllRepositories" ) == 0)
   {
     st = this->refreshAllRepositories(ctx, rslt, ref, in, out);
@@ -254,40 +258,129 @@ CmpiStatus SUSE_SoftwareInstallationServiceProviderClass::installFromSoftwareIde
     return st;
   }
 
-  // write task list
-  std::string path( zypp::filesystem::TmpFile().path().asString() );
-  std::ofstream o( path.c_str() );
-  o << siID << endl;
-  o.close();
+  CmpiArray swIdentities( 1, CMPI_string );
+  swIdentities[0] = CmpiString(siID);
 
-  shared_memory_object::remove(SHM_NAME);
+  CmpiInstance job(CmpiObjectPath(target.getNameSpace(), "SUSE_SoftwareInstallationJob"));
+  createJob(ctx, swIdentities, installOptions, job);
 
-  _CMPIZYPP_TRACE(1,("Creating shared memory"));
-  ::mode_t mask = ::umask( 0077 );
-  managed_shared_memory managed_shm( create_only, SHM_NAME, 65536 );
-  ::umask( mask );
+  out.setArg("Job", CmpiData(job.getObjectPath()));
 
-  if ( ! managed_shm.construct<Comm>("Comm")() )
+  rslt.returnData( CmpiData(CMPIUint32(4096)) ); //Job Started
+  rslt.returnDone();
+  st =  CmpiStatus ( CMPI_RC_OK );
+  _CMPIZYPP_TRACE(1,("--- %s CMPI installFromSoftwareIdentity() exited.",_ClassName));
+  return st;
+}
+
+CmpiStatus SUSE_SoftwareInstallationServiceProviderClass::installFromSoftwareIdentities(const CmpiContext &ctx,
+                                                                                        CmpiResult &rslt,
+                                                                                        const CmpiObjectPath &ref,
+                                                                                        const CmpiArgs &in, CmpiArgs &out)
+{
+  CmpiStatus st(CMPI_RC_ERR_NOT_SUPPORTED);
+  _CMPIZYPP_TRACE(1,("--- %s CMPI installFromSoftwareIdentity() called.",_ClassName));
+
+  CmpiArray installOptions;
+  CmpiArray installOptionValues;
+  CmpiArray source;
+  CmpiObjectPath target(ref.getNameSpace(), "");
+  CmpiObjectPath collection(ref.getNameSpace(), "");
+  const char *siID = "";
+  try
   {
-    _CMPIZYPP_TRACE(1,("Out of shmem constructing Comm"));
-    throw std::string( "Out of shmem constructing Comm" );
+    installOptions = static_cast<CmpiArray>(in.getArg("InstallOptions"));
+  }
+  catch(CmpiStatus rc)
+  {
+    _CMPIZYPP_TRACE(1,("--- %s CMPI installFromSoftwareIdentity() failed : %s no InstallOptions", _ClassName, rc.msg()));
+    /*
+    CmpiStatus rc( CMPI_RC_ERR_FAILED, "Missing parameter." );
+    return rc;
+    */
+  }
+  try
+  {
+    installOptionValues = static_cast<CmpiArray>(in.getArg("InstallOptionValues"));
+  }
+  catch(CmpiStatus rc)
+  {
+    _CMPIZYPP_TRACE(1,("--- %s CMPI installFromSoftwareIdentity() failed : %s no InstallOptionValues", _ClassName, rc.msg()));
+    /*
+    CmpiStatus rc( CMPI_RC_ERR_FAILED, "Missing parameter." );
+    return rc;
+    */
+  }
+  try
+  {
+    source = static_cast<CmpiArray>(in.getArg("Source"));
+  }
+  catch(CmpiStatus rc)
+  {
+    _CMPIZYPP_TRACE(1,("--- %s CMPI installFromSoftwareIdentity() failed : %s no Source", _ClassName, rc.msg()));
+    rslt.returnData( CmpiData(CMPIUint32(2)) ); // Error
+    rslt.returnDone();
+    st =  CmpiStatus ( CMPI_RC_OK );
+    return st;
+  }
+  try
+  {
+    target = in.getArg("Target");
+  }
+  catch(CmpiStatus rc)
+  {
+    _CMPIZYPP_TRACE(1,("--- %s CMPI installFromSoftwareIdentity() failed : %s no Target", _ClassName, rc.msg()));
+    rslt.returnData( CmpiData(CMPIUint32(2)) ); // Error
+    rslt.returnDone();
+    st =  CmpiStatus ( CMPI_RC_OK );
+    return st;
+  }
+  try
+  {
+    collection = in.getArg("Collection");
+  }
+  catch(CmpiStatus rc)
+  {
+    // we do not support collection
   }
 
-  ShmAccess<Comm> comm( managed_shm, "Comm" ); // blocks the helper
+  if(target.getKeyCount() > 0 && collection.getKeyCount() > 0)
+  {
+    rslt.returnData( CmpiData(CMPIUint32(2)) ); // Error
+    rslt.returnDone();
+    st =  CmpiStatus ( CMPI_RC_OK );
+    _CMPIZYPP_TRACE(1,("--- %s CMPI installFromSoftwareIdentity() exited. Unclear to which target should be installed to.",_ClassName));
+    return st;
+  }
 
-  strncpy( comm->dataStr, path.c_str(), STR_SIZE );
+  CmpiObjectPath csop = get_this_computersystem(*broker, ctx, target);
 
-  _CMPIZYPP_TRACE(1,("fork and execute installHelper"));
-  ExternalProgram helper( "/usr/lib/cmpi-zypp/installHelper" );
+  const char *selfccn  = csop.getKey("CreationClassName");
+  const char *selfn    = csop.getKey("Name");
 
-  _CMPIZYPP_TRACE(1,("installHelper started (%d)", helper.getpid() ));
+  const char *tccn  = target.getKey("CreationClassName");
+  const char *tn    = target.getKey("Name");
 
-  comm->pid = helper.getpid();
-  comm.release(); // go...
+  if( tccn == NULL || tn == NULL || selfccn == NULL || selfn == NULL ||
+    ::strcmp(tccn, selfccn) != 0 || ::strcmp(tn, selfn) != 0)
+  {
+    rslt.returnData( CmpiData(CMPIUint32(2)) ); // Error
+    rslt.returnDone();
+    st =  CmpiStatus ( CMPI_RC_OK );
+    _CMPIZYPP_TRACE(1,("--- %s CMPI installFromSoftwareIdentity() exited. Unable to install on this target.",_ClassName));
+    return st;
+  }
 
-  CmpiObjectPath jobOP(target.getNameSpace(), "SUSE_SoftwareInstallationJob");
-  jobOP.setKey("InstanceID", str::form("SUSE:%d", helper.getpid()).c_str());
-  CmpiInstance job( broker->getInstance( ctx, jobOP, NULL ) ); // source instance
+  CmpiArray swIdentities( source.size(), CMPI_string );
+  for(uint j = 0; j < source.size(); ++j)
+  {
+    CmpiObjectPath tmp = source[j];
+    siID = tmp.getKey("InstanceID");
+    swIdentities[j] = CmpiString(siID);
+  }
+
+  CmpiInstance job(CmpiObjectPath(target.getNameSpace(), "SUSE_SoftwareInstallationJob"));
+  createJob(ctx, swIdentities, installOptions, job);
 
   out.setArg("Job", CmpiData(job.getObjectPath()));
 
@@ -378,6 +471,58 @@ CmpiStatus SUSE_SoftwareInstallationServiceProviderClass::refreshAllRepositories
   st =  CmpiStatus ( CMPI_RC_OK );
   _CMPIZYPP_TRACE(1,("--- %s CMPI refreshAllRepositories() exited.",_ClassName));
   return st;
+}
+
+
+int SUSE_SoftwareInstallationServiceProviderClass::createJob(const CmpiContext &ctx, const CmpiArray &swIdentities,
+                                                             const CmpiArray &installOptions, CmpiInstance &job)
+{
+  // write task list
+  std::string path( zypp::filesystem::TmpFile().path().asString() );
+  std::ofstream o( path.c_str() );
+  for(uint i = 0; i < swIdentities.size(); ++i)
+  {
+    CmpiString s = swIdentities[i];
+    o << s.charPtr() << endl;
+  }
+  o << "InstallOptions:" << endl;
+  for(uint i = 0; i < installOptions.size(); ++i)
+  {
+    uint16_t opt = installOptions[i];
+    o << opt << endl;
+  }
+  o.close();
+
+  shared_memory_object::remove(SHM_NAME);
+
+  _CMPIZYPP_TRACE(1,("Creating shared memory"));
+  ::mode_t mask = ::umask( 0077 );
+  managed_shared_memory managed_shm( create_only, SHM_NAME, 65536 );
+  ::umask( mask );
+
+  if ( ! managed_shm.construct<Comm>("Comm")() )
+  {
+    _CMPIZYPP_TRACE(1,("Out of shmem constructing Comm"));
+    throw std::string( "Out of shmem constructing Comm" );
+  }
+
+  ShmAccess<Comm> comm( managed_shm, "Comm" ); // blocks the helper
+
+  strncpy( comm->dataStr, path.c_str(), STR_SIZE );
+
+  _CMPIZYPP_TRACE(1,("fork and execute installHelper"));
+  ExternalProgram helper( "/usr/lib/cmpi-zypp/installHelper" );
+
+  _CMPIZYPP_TRACE(1,("installHelper started (%d)", helper.getpid() ));
+
+  comm->pid = helper.getpid();
+  comm.release(); // go...
+
+  CmpiObjectPath jobOP(job.getObjectPath().getNameSpace(), "SUSE_SoftwareInstallationJob");
+  jobOP.setKey("InstanceID", str::form("SUSE:%d", helper.getpid()).c_str());
+  job = broker->getInstance( ctx, jobOP, NULL ); // source instance
+
+  return 0;
 }
 
 } // namespace cmpizypp
