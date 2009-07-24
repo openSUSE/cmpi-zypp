@@ -1,6 +1,8 @@
 #ifndef INSTALLHELPER_H
 #define INSTALLHELPER_H
 
+#include <zypp/base/String.h>
+
 #include <boost/interprocess/managed_shared_memory.hpp>
 #include <boost/interprocess/sync/interprocess_mutex.hpp>
 #include <boost/interprocess/sync/interprocess_condition.hpp>
@@ -120,14 +122,20 @@ namespace cmpizypp
 
   struct TextExch : public ShmData
   {
-    enum { buffsize = 1 };
+    enum { buffsize = 1024 };
 
     TextExch()
       : _filled( false )
     {}
 
+    void sendEOD()
+    { send(""); }
+
     void send( const char * text_r )
     { send( std::string( text_r ? text_r : "" ) ); }
+
+    void send( uint16_t int_r )
+    { send( zypp::str::numstring( int_r ) ); }
 
     void send( const std::string & text_r )
     {

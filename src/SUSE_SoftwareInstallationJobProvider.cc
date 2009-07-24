@@ -103,6 +103,7 @@ CmpiStatus SUSE_SoftwareInstallationJobProviderClass::getInstance( const CmpiCon
   uint16_t  percent = 0;
   uint16_t  error = 0;
 
+  try
   {
     managed_shared_memory managed_shm( open_only, SHM_NAME );
     ShmAccess<Comm> comm( managed_shm, "Comm" );
@@ -112,9 +113,14 @@ CmpiStatus SUSE_SoftwareInstallationJobProviderClass::getInstance( const CmpiCon
       return CmpiStatus(CMPI_RC_ERR_FAILED, "Invalid InstanceID. No such process.");
     }
 
-    status  = comm->status;
+    status  = comm->_status;
     percent = comm->percent;
     error   = comm->error;
+  }
+  catch(std::string & err)
+  {
+    _CMPIZYPP_TRACE(1,("Exception: %s", err.c_str()));
+    throw err;
   }
 
   const char * keys[] = { "InstanceID" };

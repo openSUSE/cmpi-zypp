@@ -50,15 +50,18 @@ try {
     shm_remove()  { shared_memory_object::remove(SHM_NAME); }
     ~shm_remove() { shared_memory_object::remove(SHM_NAME); }
   } remover;
+  INT << "=1" << endl;
 
   if ( ! shm().construct<Comm>("Comm")() )
   {
     throw std::string( "Out of shmem constructing Comm" );
   }
+  INT << "=2" << endl;
   if ( ! shm().find_or_construct<TextExch>("TextExch")() )
   {
     throw std::string( "Out of shmem constructing TextExch" );
   }
+  INT << "=3" << endl;
 
   ShmAccess<Comm> comm( shm(), "Comm" ); // blocks the helper
   USR << "STATUS: " << comm << endl;
@@ -75,13 +78,21 @@ try {
     "Warum auch nicht",
     "Es hat ja Zeit",
   };
+  uint16_t iargs[] = { 4,5,10,32876 };
+
   ShmAccessUnlocked<TextExch> textExch( shm(), "TextExch" );
   MIL << "Send data..." << endl;
   for_( it, arrayBegin( args ), arrayEnd( args ) )
   {
     textExch->send( *it );
   }
-  textExch->send( 0 );
+  textExch->sendEOD();
+  MIL << "Send data..." << endl;
+  for_( it, arrayBegin( iargs ), arrayEnd( iargs ) )
+  {
+    textExch->send( *it );
+  }
+  textExch->sendEOD();
   MIL << "Sent." << endl;
 
 

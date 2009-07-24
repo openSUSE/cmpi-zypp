@@ -53,6 +53,11 @@ try {
   } while( ! rec.empty() );
   MIL << "Received." << endl;
 
+  do {
+    rec = textExch->get();
+    USR << zypp::str::strtonum<uint16_t>(rec) << endl;
+  } while( ! rec.empty() );
+  MIL << "Received." << endl;
 
   for(int i = 0; i < 10; ++i)
   {

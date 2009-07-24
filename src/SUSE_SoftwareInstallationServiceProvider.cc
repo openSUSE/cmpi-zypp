@@ -477,22 +477,6 @@ CmpiStatus SUSE_SoftwareInstallationServiceProviderClass::refreshAllRepositories
 int SUSE_SoftwareInstallationServiceProviderClass::createJob(const CmpiContext &ctx, const CmpiArray &swIdentities,
                                                              const CmpiArray &installOptions, CmpiInstance &job)
 {
-  // write task list
-  std::string path( zypp::filesystem::TmpFile().path().asString() );
-  std::ofstream o( path.c_str() );
-  for(uint i = 0; i < swIdentities.size(); ++i)
-  {
-    CmpiString s = swIdentities[i];
-    o << s.charPtr() << endl;
-  }
-  o << "InstallOptions:" << endl;
-  for(uint i = 0; i < installOptions.size(); ++i)
-  {
-    uint16_t opt = installOptions[i];
-    o << opt << endl;
-  }
-  o.close();
-
   shared_memory_object::remove(SHM_NAME);
 
   _CMPIZYPP_TRACE(1,("Creating shared memory"));
@@ -505,10 +489,13 @@ int SUSE_SoftwareInstallationServiceProviderClass::createJob(const CmpiContext &
     _CMPIZYPP_TRACE(1,("Out of shmem constructing Comm"));
     throw std::string( "Out of shmem constructing Comm" );
   }
+  if ( ! managed_shm.find_or_construct<TextExch>("TextExch")() )
+  {
+    _CMPIZYPP_TRACE(1,("Out of shmem constructing TextExch"));
+    throw std::string( "Out of shmem constructing TextExch" );
+  }
 
   ShmAccess<Comm> comm( managed_shm, "Comm" ); // blocks the helper
-
-  strncpy( comm->dataStr, path.c_str(), STR_SIZE );
 
   _CMPIZYPP_TRACE(1,("fork and execute installHelper"));
   ExternalProgram helper( "/usr/lib/cmpi-zypp/installHelper" );
@@ -517,6 +504,22 @@ int SUSE_SoftwareInstallationServiceProviderClass::createJob(const CmpiContext &
 
   comm->pid = helper.getpid();
   comm.release(); // go...
+
+  ShmAccessUnlocked<TextExch> textExch( managed_shm, "TextExch" );
+  // write task list
+  for(uint i = 0; i < swIdentities.size(); ++i)
+  {
+    CmpiString s = swIdentities[i];
+    textExch->send( s.charPtr() );
+  }
+  textExch->sendEOD();
+
+  for(uint i = 0; i < installOptions.size(); ++i)
+  {
+    uint16_t opt = installOptions[i];
+    textExch->send( opt );
+  }
+  textExch->sendEOD();
 
   CmpiObjectPath jobOP(job.getObjectPath().getNameSpace(), "SUSE_SoftwareInstallationJob");
   jobOP.setKey("InstanceID", str::form("SUSE:%d", helper.getpid()).c_str());
