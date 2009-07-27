@@ -71,6 +71,7 @@ try {
   USR << "STATUS: " << comm << endl;
 
 
+
   MIL << "Prepare to send data..." << endl;
   const char * args[] = {
     "Das Reh huepft hoch",
@@ -78,7 +79,12 @@ try {
     "Warum auch nicht",
     "Es hat ja Zeit",
   };
-  uint16_t iargs[] = { 4,5,10,32876 };
+  InstallOptions iargs[] = {
+    IO_INSTALL,
+    IO_UPDATE,
+    IO_LOG,
+    IO_SOLVE_DEPENDENCIES
+  };
 
   ShmAccessUnlocked<TextExch> textExch( shm(), "TextExch" );
   MIL << "Send data..." << endl;

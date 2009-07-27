@@ -2,6 +2,7 @@
 #define INSTALLHELPER_H
 
 #include <zypp/base/String.h>
+#include <zypp/base/Exception.h>
 
 #include <boost/interprocess/managed_shared_memory.hpp>
 #include <boost/interprocess/sync/interprocess_mutex.hpp>
@@ -16,6 +17,29 @@
 
 namespace cmpizypp
 {
+  struct ShmException : public zypp::Exception
+  {
+    explicit ShmException( const std::string & msg_r = std::string() )
+      : Exception( msg_r )
+    {}
+  };
+  struct ShmExceptionNoNamedObject : public ShmException
+  {
+    explicit ShmExceptionNoNamedObject( const std::string & name_r )
+      : ShmException( zypp::str::form("Shm: can't find object named '%s'.",name_r.c_str()) )
+    {}
+  };
+  struct ShmExceptionGotNoLock : public ShmException
+  {
+    explicit ShmExceptionGotNoLock( time_t timeout_r )
+      : ShmException( zypp::str::form("Shm: Got no lock within '%ld' sec.",timeout_r) )
+    {}
+  };
+
+  /** Return the time \c timeout_r seconts in the future. */
+  inline boost::posix_time::ptime timeoutIn( time_t timeout_r )
+  { return boost::posix_time::from_time_t( ::time(0)+timeout_r ); }
+
   /**
    * Base class for lockable shared memory objetcs.
    */
@@ -58,20 +82,20 @@ namespace cmpizypp
        * \todo Define Exceptions.
        */
       ShmAccess( boost::interprocess::managed_shared_memory & managed_shm_r,
-                 const char * name_r, time_t timeout = SHMACCESS_DEFAULTTIMEOUT )
+                 const char * name_r, time_t timeout_r = SHMACCESS_DEFAULTTIMEOUT )
         : _d( managed_shm_r.find<Derived>( name_r ).first )
         , _locked( false )
       {
         if ( !_d )
-          throw std::string( "Can't find " ) + name_r;
-        if ( timeout >= 0 )
+          ZYPP_THROW( ShmExceptionNoNamedObject( name_r ) );
+        if ( timeout_r >= 0 )
         {
-          _locked = timeout ? _d->_mutex.timed_lock( boost::posix_time::from_time_t( ::time(0)+timeout ) )
-                            : _d->_mutex.try_lock();
+          _locked = timeout_r ? _d->_mutex.timed_lock( timeoutIn( timeout_r ) )
+                              : _d->_mutex.try_lock();
           if ( !_locked )
-            throw std::string( "Got no lock" );
+            ZYPP_THROW( ShmExceptionGotNoLock( timeout_r ) );
         }
-        else if ( timeout == SHMACCESS_WAIT )
+        else if ( timeout_r == SHMACCESS_WAIT )
         {
           _d->_mutex.lock();
         }
@@ -131,11 +155,11 @@ namespace cmpizypp
     void sendEOD()
     { send(""); }
 
-    void send( const char * text_r )
-    { send( std::string( text_r ? text_r : "" ) ); }
-
     void send( uint16_t int_r )
     { send( zypp::str::numstring( int_r ) ); }
+
+    void send( const char * text_r )
+    { send( std::string( text_r ? text_r : "" ) ); }
 
     void send( const std::string & text_r )
     {
@@ -144,10 +168,13 @@ namespace cmpizypp
       std::string::size_type remaining = text_r.size();
       while ( remaining || noEOD )
       {
-        boost::interprocess::scoped_lock<mutex_t> lock( _mutex );
+        boost::interprocess::scoped_lock<mutex_t> lock( _mutex, timeoutIn(SHMACCESS_DEFAULTTIMEOUT) );
+        if ( ! lock )
+          ZYPP_THROW( ShmExceptionGotNoLock( SHMACCESS_DEFAULTTIMEOUT ) );
         if ( _filled )
         {
-          buff_full.wait( lock );
+          if ( ! buff_full.timed_wait( lock, timeoutIn(SHMACCESS_DEFAULTTIMEOUT) ) )
+            ZYPP_THROW( ShmExceptionGotNoLock( SHMACCESS_DEFAULTTIMEOUT ) );
         }
         if ( remaining )
         {
@@ -172,10 +199,13 @@ namespace cmpizypp
       bool noEOD = true;
       std::string ret;
       do {
-        boost::interprocess::scoped_lock<mutex_t> lock( _mutex );
+        boost::interprocess::scoped_lock<mutex_t> lock( _mutex, timeoutIn(SHMACCESS_DEFAULTTIMEOUT) );
+        if ( ! lock )
+          ZYPP_THROW( ShmExceptionGotNoLock( SHMACCESS_DEFAULTTIMEOUT ) );
         if ( ! _filled )
         {
-          buff_empty.wait( lock );
+          if ( ! buff_empty.timed_wait( lock, timeoutIn(SHMACCESS_DEFAULTTIMEOUT) ) )
+            ZYPP_THROW( ShmExceptionGotNoLock( SHMACCESS_DEFAULTTIMEOUT ) );
         }
         if ( *_buff )
           ret += _buff;
@@ -218,6 +248,26 @@ namespace cmpizypp
     JS_EXCEPTION	= 10,
     JS_SERVICE		= 11,
     JS_QUERY_PENDING	= 12
+  };
+
+  /** Install Options
+   * \li DMTF Reserved 13..32767
+   * \li Vendor Reserved 32768..65535
+   */
+  enum InstallOptions
+  {
+    IO_DEFER_RESET		= 2,
+    IO_FORCE_INSTALLATION	= 3,
+    IO_INSTALL			= 4,
+    IO_UPDATE			= 5,
+    IO_REPAIR			= 6,
+    IO_REBOOT			= 7,
+    IO_PASSWORD			= 8,
+    IO_UNINSTALL		= 9,
+    IO_LOG			= 10,
+    IO_SILENT_MODE		= 11,
+    IO_ADMINISTRATIVE_MODE	= 12,
+    IO_SOLVE_DEPENDENCIES	= 32768
   };
 
   enum Answers
@@ -273,6 +323,28 @@ namespace cmpizypp
 #undef OUTS
     }
     return str << "JS_(" << unsigned(obj) << ")";
+  }
+
+  std::ostream & operator<<( std::ostream & str, InstallOptions obj )
+  {
+    switch ( obj )
+    {
+#define OUTS(E) case E: return str << #E; break
+      OUTS( IO_DEFER_RESET );
+      OUTS( IO_FORCE_INSTALLATION );
+      OUTS( IO_INSTALL );
+      OUTS( IO_UPDATE );
+      OUTS( IO_REPAIR );
+      OUTS( IO_REBOOT );
+      OUTS( IO_PASSWORD );
+      OUTS( IO_UNINSTALL );
+      OUTS( IO_LOG );
+      OUTS( IO_SILENT_MODE );
+      OUTS( IO_ADMINISTRATIVE_MODE );
+      OUTS( IO_SOLVE_DEPENDENCIES );
+#undef OUTS
+    }
+    return str << "IO_(" << unsigned(obj) << ")";
   }
 
   std::ostream & operator<<( std::ostream & str, const Comm & obj )
