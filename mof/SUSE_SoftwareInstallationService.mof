@@ -98,7 +98,7 @@ class SUSE_SoftwareInstallationService : CIM_SoftwareInstallationService
         "Force installation", "Install", "Update", "Repair",
         "Reboot", "Password", "Uninstall", "Log",
         "SilentMode", "AdministrativeMode", "DMTF Reserved",
-        "Solve Dependencies"
+        "Solve Dependencies",
         "Vendor Specific" },
         ArrayType ( "Indexed" ),
         ModelCorrespondence {
